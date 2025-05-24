@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "./sidebar";
-import Loader from "./Loader";
+import Loader from "./loader";
 import { useEffect, useState } from "react";
 const Layout = () => {
   const [isLoading, setIsLoading] = useState(true);
