@@ -1,11 +1,10 @@
-import React from "react";
 import {
   HomeIcon,
   BriefcaseIcon,
   DocumentTextIcon,
   GiftIcon,
-  CogIcon,
-} from "@heroicons/react/24/outline";
+  Cog6ToothIcon,
+} from "@heroicons/react/24/solid";
 import Home from "../pages/Home";
 import Workspace from "../pages/Workspace";
 import Notes from "../pages/Notes";
@@ -42,6 +41,6 @@ export const routes: Route[] = [
     path: "/settings",
     name: "Settings",
     element: <Settings />,
-    icon: CogIcon,
+    icon: Cog6ToothIcon,
   },
 ];
