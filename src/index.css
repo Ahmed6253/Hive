@@ -45,7 +45,7 @@
     transform: translateX(0px);
   }
   100% {
-    transform: translateX(-5px);
+    transform: translateX(-4px);
   }
 }
 
@@ -58,17 +58,60 @@
   }
 }
 
+@keyframes right {
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(1deg);
+  }
+  40% {
+    transform: rotate(0deg);
+  }
+  60% {
+    transform: rotate(1deg);
+  }
+  80% {
+    transform: rotate(-1deg);
+  }
+}
+
+@keyframes left {
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-1deg);
+  }
+  40% {
+    transform: rotate(0deg);
+  }
+  60% {
+    transform: rotate(-1deg);
+  }
+  80% {
+    transform: rotate(1deg);
+  }
+}
 #beeLoader {
-  animation: rotate 1s ease-in-out;
+  animation: rotate 0.8s ease-in-out;
   transform: rotate(-90deg);
 }
 
 #wing {
-  animation: wing 1.5s ease-in-out;
-  transform: translateX(-5px);
+  animation: wing 2s ease-in-out;
+  transform: translateX(-4px);
 }
 
 #head {
-  animation: head 2s ease-in-out;
+  animation: head 1.5s ease-in-out;
   transform: translateX(26px);
+}
+
+#right {
+  animation: right 2s ease-in-out infinite;
+}
+
+#left {
+  animation: left 2s ease-in-out infinite;
 }
