@@ -20,8 +20,8 @@ export const routes: Route[] = [
     icon: HomeIcon,
   },
   {
-    path: "/workspace",
-    name: "Workspace",
+    path: "/workspaces",
+    name: "Workspaces",
     element: <Workspace />,
     icon: BriefcaseIcon,
   },

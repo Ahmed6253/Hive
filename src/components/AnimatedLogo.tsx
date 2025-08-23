@@ -1,8 +1,4 @@
-import useSideBarStore from "../stores/useSideBar";
-
-const AnimatedLogo = () => {
-  const isOpen = useSideBarStore((state) => state.isOpen);
-
+const AnimatedLogo = ({ isOpen }: { isOpen: boolean }) => {
   return (
     <div className="flex items-center gap-3 mt-4">
       <svg

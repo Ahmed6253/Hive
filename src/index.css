@@ -8,6 +8,7 @@
   --color-accent: var(--accent);
   --color-success: var(--success);
   --color-error: var(--error);
+  --color-text: var(--text);
 }
 
 :root {
@@ -29,6 +30,7 @@
   --accent: rgba(165, 123, 93, 1);
   --success: rgba(136, 172, 161, 1);
   --error: rgba(125, 66, 69, 1);
+  --text: rgba(238, 237, 235, 1);
 }
 
 @keyframes rotate {
@@ -114,4 +116,10 @@
 
 #left {
   animation: left 2s ease-in-out infinite;
+}
+
+@layer components {
+  .btn {
+    @apply flex h-fit px-3 rounded-md font-semibold py-1 items-center bg-text text-bg cursor-pointer hover:bg-text/95 hover:shadow-md;
+  }
 }

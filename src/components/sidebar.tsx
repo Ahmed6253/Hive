@@ -11,25 +11,23 @@ const Sidebar = () => {
 
   return (
     <div
+      onClick={() => {
+        !isOpen && toggleSideBar();
+      }}
       className={`flex h-screen  flex-col bg-transparent transition-all duration-500  overflow-hidden ${
-        isOpen ? "w-46" : "w-11"
+        isOpen ? "sm:w-46 w-full" : "w-15"
       }`}
     >
-      <div className="flex h-16 items-center justify-between pl-4 relative">
-        <AnimatedLogo />
+      <div className="flex h-16 items-center justify-between pl-4.5 relative">
+        <AnimatedLogo isOpen={isOpen} />
         <ChevronLeftIcon
           onClick={toggleSideBar}
-          className={`w-5 mt-8 cursor-pointer -right-2 transition-all duration-700 absolute ${
-            !isOpen ? "hidden opacity-0" : "block opacity-100"
+          className={`w-5 mt-8 cursor-pointer  transition-all duration-500 absolute ${
+            !isOpen ? " opacity-0 -right-4" : " opacity-100 right-2"
           }`}
         />
       </div>
-      <nav
-        onClick={() => {
-          !isOpen && toggleSideBar();
-        }}
-        className="flex-1 flex flex-col space-y-1 px-2 py-4 mt-5"
-      >
+      <nav className="flex-1 flex gap-2 flex-col space-y-1 px-2 py-4 mt-5">
         {routes.map((route: Route) => (
           <NavLink
             key={route.name}
