@@ -9,6 +9,8 @@
   --color-success: var(--success);
   --color-error: var(--error);
   --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-modal: var(--modal);
 }
 
 :root {
@@ -24,12 +26,14 @@
 
   /* colors */
   --bg: rgba(47, 54, 69, 1);
+  --modal: rgb(65, 68, 77);
+  --muted: rgba(47, 54, 69, 0.8);
   --card: rgba(238, 237, 235, 0.08);
   --primary: rgba(230, 185, 166, 1);
   --secondary: rgba(147, 145, 133, 1);
   --accent: rgba(165, 123, 93, 1);
   --success: rgba(136, 172, 161, 1);
-  --error: rgba(125, 66, 69, 1);
+  --error: rgb(155, 66, 71);
   --text: rgba(238, 237, 235, 1);
 }
 
@@ -122,4 +126,17 @@
   .btn {
     @apply flex h-fit px-3 rounded-md font-semibold py-1 items-center bg-text text-bg cursor-pointer hover:bg-text/95 hover:shadow-md;
   }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
 }

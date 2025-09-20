@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "./sidebar";
-import Loader from "./loader";
+import Sidebar from "./Sidebar";
+import Loader from "./Loader";
 import { useEffect, useState } from "react";
 import useSideBarStore from "../stores/useSideBar";
 
@@ -20,7 +20,7 @@ const Layout = () => {
       <Sidebar />
 
       <main
-        className={`flex-1 overflow-auto bg-card rounded-lg m-3 ml-0 p-6 ${
+        className={`flex-1 ml-15 overflow-auto bg-card rounded-lg m-3 sm:ml-0 p-6 ${
           isOpen && "sm:block hidden "
         }`}
       >

@@ -11,14 +11,16 @@ const Sidebar = () => {
 
   return (
     <div
-      onClick={() => {
-        !isOpen && toggleSideBar();
-      }}
-      className={`flex h-screen  flex-col bg-transparent transition-all duration-500  overflow-hidden ${
-        isOpen ? "sm:w-46 w-full" : "w-15"
+      className={`flex h-screen absolute sm:static   flex-col bg-transparent transition-all duration-500  overflow-hidden ${
+        isOpen ? "sm:w-46 w-full " : "w-15"
       }`}
     >
-      <div className="flex h-16 items-center justify-between pl-4.5 relative">
+      <div
+        onClick={() => {
+          !isOpen && toggleSideBar();
+        }}
+        className="flex h-16 items-center justify-between pl-4.5 relative cursor-pointer"
+      >
         <AnimatedLogo isOpen={isOpen} />
         <ChevronLeftIcon
           onClick={toggleSideBar}

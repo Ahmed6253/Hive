@@ -1,7 +1,7 @@
 const Loader = ({ isLoading }: { isLoading?: boolean }) => {
   return (
     <div
-      className={`w-full h-full absolute top-0 left-0 z-50 items-center justify-center backdrop-blur-xl bg-bg/50 ${
+      className={`w-full h-full absolute top-0 left-0 z-50 items-center justify-center backdrop-blur-[3px] bg-bg/80 ${
         isLoading ? "flex" : "hidden"
       }`}
     >

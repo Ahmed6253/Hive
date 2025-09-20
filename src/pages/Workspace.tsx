@@ -1,214 +1,142 @@
-import {
-  Aperture,
-  Apple,
-  Atom,
-  Backpack,
-  Bike,
-  BookOpenText,
-  Brain,
-  Briefcase,
-  Brush,
-  Camera,
-  Car,
-  Cat,
-  CircleDollarSign,
-  ClipboardPenLine,
-  Code,
-  Dog,
-  Drill,
-  Drum,
-  Dumbbell,
-  FlaskConical,
-  GraduationCap,
-  Guitar,
-  Hammer,
-  Keyboard,
-  Medal,
-  Mic,
-  Monitor,
-  Music,
-  NotebookPen,
-  Piano,
-  Plus,
-  Shirt,
-  Stethoscope,
-  Store,
-  Tablets,
-  WandSparkles,
-  Wrench,
-} from "lucide-react";
+import { CirclePlus, Pencil, Trash } from "lucide-react";
+import { Icons } from "../components/ui/icons";
+import Modal from "../components/Modal";
+import { useState } from "react";
+
+interface workspace {
+  id: number;
+  icon: keyof typeof Icons;
+  title: string;
+  description: string;
+}
+
+const dummyWorkspaces: workspace[] = [
+  {
+    id: 1,
+    icon: "work",
+    title: "Project Management Hub",
+    description: "Organize and track all your business projects",
+  },
+  {
+    id: 2,
+    icon: "code",
+    title: "Development Studio",
+    description: "Full-stack development environment",
+  },
+  {
+    id: 3,
+    icon: "graduation",
+    title: "Learning Center",
+    description: "Educational resources and course materials",
+  },
+  {
+    id: 4,
+    icon: "camera",
+    title: "Photography Portfolio",
+    description: "Showcase your best photography work",
+  },
+  {
+    id: 5,
+    icon: "music",
+    title: "Music Production",
+    description: "Create and mix your latest tracks",
+  },
+  {
+    id: 6,
+    icon: "apple",
+    title: "Nutrition Tracker",
+    description: "Monitor your daily meals and health goals",
+  },
+  {
+    id: 7,
+    icon: "dumbbell",
+    title: "Fitness Tracker",
+    description: "Monitor workouts and health progress",
+  },
+  {
+    id: 8,
+    icon: "dollar",
+    title: "Finance Dashboard",
+    description: "Budget tracking and expense management",
+  },
+  {
+    id: 9,
+    icon: "brain",
+    title: "Research Lab",
+    description: "Scientific research and data analysis",
+  },
+  {
+    id: 10,
+    icon: "brush",
+    title: "Design Studio",
+    description: "Creative designs and artistic projects",
+  },
+  {
+    id: 11,
+    icon: "car",
+    title: "Auto Workshop",
+    description: "Vehicle maintenance and repair logs",
+  },
+  {
+    id: 12,
+    icon: "store",
+    title: "E-commerce Hub",
+    description: "Online store management and inventory",
+  },
+  {
+    id: 13,
+    icon: "stethoscope",
+    title: "Health Monitor",
+    description: "Personal health tracking and records",
+  },
+  {
+    id: 14,
+    icon: "guitar",
+    title: "Band Practice",
+    description: "Song arrangements and practice sessions",
+  },
+  {
+    id: 15,
+    icon: "flask",
+    title: "Chemistry Lab",
+    description: "Experiment tracking and lab notebooks",
+  },
+  {
+    id: 16,
+    icon: "backpack",
+    title: "Travel Planner",
+    description: "Trip itineraries and adventure logs",
+  },
+  {
+    id: 17,
+    icon: "cat",
+    title: "Pet Care",
+    description: "Track your pets health and activities",
+  },
+  {
+    id: 18,
+    icon: "hammer",
+    title: "DIY Projects",
+    description: "Home improvement and crafting projects",
+  },
+  {
+    id: 19,
+    icon: "notebook",
+    title: "Personal Journal",
+    description: "Daily thoughts and life reflections",
+  },
+  {
+    id: 20,
+    icon: "medal",
+    title: "Achievement Board",
+    description: "Track your goals and milestones",
+  },
+];
 
 const Workspace = () => {
-  const Icons = {
-    work: <Briefcase className="w-5 h-5" />,
-    dumbbell: <Dumbbell className="w-5 h-5" />,
-    graduation: <GraduationCap className="w-5 h-5" />,
-    bookOpen: <BookOpenText className="w-5 h-5" />,
-    notebook: <NotebookPen className="w-5 h-5" />,
-    code: <Code className="w-5 h-5" />,
-    car: <Car className="w-5 h-5" />,
-    apple: <Apple className="w-5 h-5" />,
-    drill: <Drill className="w-5 h-5" />,
-    aperture: <Aperture className="w-5 h-5" />,
-    atom: <Atom className="w-5 h-5" />,
-    bike: <Bike className="w-5 h-5" />,
-    brush: <Brush className="w-5 h-5" />,
-    brain: <Brain className="w-5 h-5" />,
-    cat: <Cat className="w-5 h-5" />,
-    camera: <Camera className="w-5 h-5" />,
-    dollar: <CircleDollarSign className="w-5 h-5" />,
-    clipboard: <ClipboardPenLine className="w-5 h-5" />,
-    flask: <FlaskConical className="w-5 h-5" />,
-    monitor: <Monitor className="w-5 h-5" />,
-    shirt: <Shirt className="w-5 h-5" />,
-    music: <Music className="w-5 h-5" />,
-    guitar: <Guitar className="w-5 h-5" />,
-    piano: <Piano className="w-5 h-5" />,
-    drum: <Drum className="w-5 h-5" />,
-    mic: <Mic className="w-5 h-5" />,
-    backpack: <Backpack className="w-5 h-5" />,
-    dog: <Dog className="w-5 h-5" />,
-    keyboard: <Keyboard className="w-5 h-5" />,
-    hammer: <Hammer className="w-5 h-5" />,
-    medal: <Medal className="w-5 h-5" />,
-    wrench: <Wrench className="w-5 h-5" />,
-    tablets: <Tablets className="w-5 h-5" />,
-    stethoscope: <Stethoscope className="w-5 h-5" />,
-    store: <Store className="w-5 h-5" />,
-  };
-
-  interface workspace {
-    id: number;
-    icon: keyof typeof Icons;
-    title: string;
-    description: string;
-  }
-
-  const dummyWorkspaces: workspace[] = [
-    {
-      id: 1,
-      icon: "work",
-      title: "Project Management Hub",
-      description: "Organize and track all your business projects",
-    },
-    {
-      id: 2,
-      icon: "code",
-      title: "Development Studio",
-      description: "Full-stack development environment",
-    },
-    {
-      id: 3,
-      icon: "graduation",
-      title: "Learning Center",
-      description: "Educational resources and course materials",
-    },
-    {
-      id: 4,
-      icon: "camera",
-      title: "Photography Portfolio",
-      description: "Showcase your best photography work",
-    },
-    {
-      id: 5,
-      icon: "music",
-      title: "Music Production",
-      description: "Create and mix your latest tracks",
-    },
-    {
-      id: 6,
-      icon: "apple",
-      title: "Nutrition Tracker",
-      description: "Monitor your daily meals and health goals",
-    },
-    {
-      id: 7,
-      icon: "dumbbell",
-      title: "Fitness Tracker",
-      description: "Monitor workouts and health progress",
-    },
-    {
-      id: 8,
-      icon: "dollar",
-      title: "Finance Dashboard",
-      description: "Budget tracking and expense management",
-    },
-    {
-      id: 9,
-      icon: "brain",
-      title: "Research Lab",
-      description: "Scientific research and data analysis",
-    },
-    {
-      id: 10,
-      icon: "brush",
-      title: "Design Studio",
-      description: "Creative designs and artistic projects",
-    },
-    {
-      id: 11,
-      icon: "car",
-      title: "Auto Workshop",
-      description: "Vehicle maintenance and repair logs",
-    },
-    {
-      id: 12,
-      icon: "store",
-      title: "E-commerce Hub",
-      description: "Online store management and inventory",
-    },
-    {
-      id: 13,
-      icon: "stethoscope",
-      title: "Health Monitor",
-      description: "Personal health tracking and records",
-    },
-    {
-      id: 14,
-      icon: "guitar",
-      title: "Band Practice",
-      description: "Song arrangements and practice sessions",
-    },
-    {
-      id: 15,
-      icon: "flask",
-      title: "Chemistry Lab",
-      description: "Experiment tracking and lab notebooks",
-    },
-    {
-      id: 16,
-      icon: "backpack",
-      title: "Travel Planner",
-      description: "Trip itineraries and adventure logs",
-    },
-    {
-      id: 17,
-      icon: "cat",
-      title: "Pet Care",
-      description: "Track your pets health and activities",
-    },
-    {
-      id: 18,
-      icon: "hammer",
-      title: "DIY Projects",
-      description: "Home improvement and crafting projects",
-    },
-    {
-      id: 19,
-      icon: "notebook",
-      title: "Personal Journal",
-      description: "Daily thoughts and life reflections",
-    },
-    {
-      id: 20,
-      icon: "medal",
-      title: "Achievement Board",
-      description: "Track your goals and milestones",
-    },
-  ];
-
+  const [showModal, setShowModal] = useState(false);
   return (
-    <div className="p-6">
+    <div>
       <div className="flex justify-between">
         <div>
           <h1 className="text-2xl font-bold mb-2">Workspaces</h1>
@@ -216,15 +144,22 @@ const Workspace = () => {
             Manage your workspaces and projects here.
           </p>
         </div>
-        <button className="btn">
-          <WandSparkles className="w-4 h-4 mr-2" /> Create
-        </button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div
+          onClick={() => setShowModal(true)}
+          className="p-4 bg-card rounded-lg shadow-sm hover:shadow-md pt-6 hover:pt-4 cursor-pointer flex items-center justify-center flex-col gap-2 group hover:text-primary transition-all duration-300 border text-text/80 hover:border-primary"
+        >
+          <CirclePlus className="w-12 h-12  stroke-1 group-hover:rotate-90 transition-all duration-300" />
+          <p className="text-xs font-semibold overflow-hidden h-0 group-hover:h-4 transition-all duration-300">
+            Create New Workspace
+          </p>
+        </div>
+
         {dummyWorkspaces.map((workspace) => (
           <div
             key={workspace.id}
-            className="p-4 bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+            className="p-4 pb-2 bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md flex flex-col group cursor-pointer border border-transparent hover:border-text transition-all duration-300"
           >
             <div className="flex items-center mb-3">
               <div className=" mr-3 flex-shrink-0 text-primary">
@@ -233,9 +168,31 @@ const Workspace = () => {
               <p className="font-semibold  truncate">{workspace.title}</p>
             </div>
             <p className="text-sm ">{workspace.description}</p>
+            <div className="flex mt-auto pt-2 translate-y-[40px] group-hover:translate-y-0 items-end justify-end gap-2 group-hover:opacity-100 opacity-0 transition-all duration-300">
+              <Pencil className="w-6 h-6 bg-text text-bg p-1 rounded-md hover:bg-text/80 transition-all duration-300" />
+              <Trash className="w-6 h-6  bg-error p-1 rounded-md hover:bg-error/80 transition-all duration-300" />
+            </div>
           </div>
         ))}
       </div>
+      <Modal
+        title="Create Workspace"
+        show={showModal}
+        toggleShow={() => setShowModal(!showModal)}
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="title">Workspace Title</label>
+            <input
+              type="text"
+              name="title"
+              id="title"
+              placeholder="Enter workspace title"
+              className="input"
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
