@@ -140,3 +140,55 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
 }
+
+@keyframes pop {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes from-bottom {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes back-bottom {
+  0% {
+    transform: translateY(0px);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes from-top {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.from-bottom {
+  animation: from-bottom 0.3s ease-in-out;
+}
+
+.back-bottom {
+  animation: back-bottom 0.3s ease-in-out;
+}
+
+.from-top {
+  animation: from-top 0.3s ease-in-out;
+}
+
+.pop {
+  animation: pop 0.3s ease-in-out;
+}
