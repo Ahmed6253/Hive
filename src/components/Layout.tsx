@@ -20,7 +20,7 @@ const Layout = () => {
       <Sidebar />
 
       <main
-        className={`flex-1 ml-15 overflow-auto bg-card rounded-lg m-3 sm:ml-0 p-6 ${
+        className={`flex-1 ml-15 overflow-auto bg-cont-color rounded-lg m-3 sm:ml-0 p-6 ${
           isOpen && "sm:block hidden "
         }`}
       >

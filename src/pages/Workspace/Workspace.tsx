@@ -1,7 +1,9 @@
 import { CirclePlus, Pencil, Trash } from "lucide-react";
-import { Icons } from "../components/ui/icons";
-import Modal from "../components/Modal";
+import { Icons } from "../../components/ui/icons";
+
 import { useState } from "react";
+
+import NewWorkspace from "./NewWorkspace";
 
 interface workspace {
   id: number;
@@ -135,6 +137,7 @@ const dummyWorkspaces: workspace[] = [
 
 const Workspace = () => {
   const [showModal, setShowModal] = useState(false);
+
   return (
     <div>
       <div className="flex justify-between">
@@ -175,24 +178,11 @@ const Workspace = () => {
           </div>
         ))}
       </div>
-      <Modal
-        title="Create Workspace"
-        show={showModal}
-        toggleShow={() => setShowModal(!showModal)}
-      >
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="title">Workspace Title</label>
-            <input
-              type="text"
-              name="title"
-              id="title"
-              placeholder="Enter workspace title"
-              className="input"
-            />
-          </div>
-        </div>
-      </Modal>
+      <NewWorkspace
+        showModal={showModal}
+        setShowModal={() => setShowModal(false)}
+        Icons={Icons}
+      />
     </div>
   );
 };

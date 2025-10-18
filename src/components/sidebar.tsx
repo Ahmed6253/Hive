@@ -23,7 +23,7 @@ const Sidebar = () => {
         <AnimatedLogo isOpen={isOpen} />
 
         <ChevronLeft
-          strokeWidth={2.5}
+          strokeWidth={3}
           className={`w-5  cursor-pointer bottom-1 transition-all duration-500 absolute ${
             !isOpen
               ? "text-bg rotate-180 right-4 bottom-[0.75rem]"

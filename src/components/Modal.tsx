@@ -30,11 +30,11 @@ export default function Modal({
   return (
     <div
       onClick={toggle}
-      className="fixed top-0 left-0 w-full h-full bg-bg/80 backdrop-blur-[3px] flex justify-center items-center"
+      className="fixed top-0 left-0 w-full h-full bg-bg/90 flex justify-center items-center"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-bg border border-text/20 from-bottom h-[50vh] min-w-sm p-4 rounded-lg space-y-2 ${
+        className={`bg-card mx-2 overflow-hidden from-bottom max-h-[70vh] min-w-[320px] max-w-full p-4 rounded-lg space-y-2 overflow-y-auto ${
           isClose && "back-bottom"
         }`}
       >

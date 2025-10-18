@@ -6,7 +6,7 @@ import {
   Cog6ToothIcon,
 } from "@heroicons/react/24/solid";
 import Home from "../pages/Home";
-import Workspace from "../pages/Workspace";
+import Workspace from "../pages/Workspace/Workspace";
 import Notes from "../pages/Notes";
 import Rewards from "../pages/Rewards";
 import Settings from "../pages/Settings";
