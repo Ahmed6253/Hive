@@ -3,7 +3,8 @@ import { routes } from "../routes";
 import { Route } from "../types";
 import AnimatedLogo from "./AnimatedLogo";
 import useSideBarStore from "../stores/useSideBar";
-import { ChevronLeftIcon } from "@heroicons/react/24/solid";
+
+import { ChevronLeft } from "lucide-react";
 
 const Sidebar = () => {
   const isOpen = useSideBarStore((state) => state.isOpen);
@@ -16,16 +17,17 @@ const Sidebar = () => {
       }`}
     >
       <div
-        onClick={() => {
-          !isOpen && toggleSideBar();
-        }}
+        onClick={toggleSideBar}
         className="flex h-16 items-center justify-between pl-4.5 relative cursor-pointer"
       >
         <AnimatedLogo isOpen={isOpen} />
-        <ChevronLeftIcon
-          onClick={toggleSideBar}
-          className={`w-5 mt-8 cursor-pointer  transition-all duration-500 absolute ${
-            !isOpen ? " opacity-0 -right-4" : " opacity-100 right-2"
+
+        <ChevronLeft
+          strokeWidth={2.5}
+          className={`w-5  cursor-pointer bottom-1 transition-all duration-500 absolute ${
+            !isOpen
+              ? "text-bg rotate-180 right-4 bottom-[0.75rem]"
+              : " opacity-100 right-2"
           }`}
         />
       </div>
