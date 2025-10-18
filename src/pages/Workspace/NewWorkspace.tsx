@@ -16,9 +16,30 @@ const NewWorkspace = ({
   Icons: any;
 }) => {
   const [currentPage, setCurrentPage] = useState(0);
-  const iconsPerPage = 4;
+  const [data, setData] = useState({
+    title: "",
+    description: "",
+    icon: "",
+  });
+  const iconsPerPage = 12;
   const totalIcons = Object.keys(Icons).length;
   const totalPages = Math.ceil(totalIcons / iconsPerPage);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setData({
+      ...data,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleIconSelect = (icon: string) => {
+    setData({
+      ...data,
+      icon,
+    });
+  };
 
   const handleNextPage = () => {
     setCurrentPage((prev) => (prev + 1) % totalPages);
@@ -35,28 +56,30 @@ const NewWorkspace = ({
     >
       <div className="space-y-4 w-[500px] max-w-full">
         <div className="space-y-2 ">
-          <Label htmlFor="title">Workspace Title </Label>
+          <Label htmlFor="title">Title</Label>
           <Input
             type="text"
             name="title"
             id="title"
             placeholder="Enter workspace title"
             className="input"
+            onChange={handleChange}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="description">Workspace Description</Label>
+          <Label htmlFor="description">Description</Label>
           <Textarea
             name="description"
             id="description"
             placeholder="Enter workspace description"
             className="max-h-30"
+            onChange={handleChange}
           />
         </div>
         <div className="space-y-2 ">
-          <Label htmlFor="icon">Workspace Icon</Label>
-          <div className="relative bg-bg/50 rounded-md px-2 py-4 mt-1">
-            <div className="grid grid-cols-4 relative px-5 py-3">
+          <Label htmlFor="icon">Select Workspace Icon</Label>
+          <div className="relative bg-bg/50 rounded-md px-2 py-2 mt-1 ">
+            <div className="grid grid-cols-4 relative px-10 gap-y-2 py-3">
               {Object.keys(Icons)
                 .slice(
                   currentPage * iconsPerPage,
@@ -64,25 +87,28 @@ const NewWorkspace = ({
                 )
                 .map((icon, index) => (
                   <div key={index} className="flex items-center justify-center">
-                    <div className="p-3 w-fit hover:bg-primary/20 rounded-full cursor-pointer transition-all duration-300">
+                    <button
+                      name="icon"
+                      onClick={() => handleIconSelect(icon)}
+                      className={`p-3 w-fit hover:bg-text/10 rounded-full text-primary cursor-pointer transition-all duration-300 ${
+                        data.icon === icon ? "bg-text/15 ring-2 ring-text" : ""
+                      }`}
+                    >
                       {Icons[icon as keyof typeof Icons]}
-                    </div>
+                    </button>
                   </div>
                 ))}
               <button
                 onClick={handlePrevPage}
-                className="absolute left-5  top-1/2 -translate-y-1/2 -translate-x-4 p-1 rounded-full  hover:bg-primary/20 transition-all duration-300"
+                className="absolute cursor-pointer left-5  top-1/2 -translate-y-1/2 -translate-x-4 p-1 rounded-full  hover:bg-text/20 transition-all duration-300"
               >
-                <ChevronLeft strokeWidth={3} className="w-5 h-5 text-primary" />
+                <ChevronLeft strokeWidth={3} className="w-5 h-5 " />
               </button>
               <button
                 onClick={handleNextPage}
-                className="absolute right-5 top-1/2 -translate-y-1/2 translate-x-4 p-1 rounded-full  hover:bg-primary/20 transition-all duration-300"
+                className="absolute cursor-pointer right-5 top-1/2 -translate-y-1/2 translate-x-4 p-1 rounded-full  hover:bg-text/20 transition-all duration-300"
               >
-                <ChevronRight
-                  strokeWidth={3}
-                  className="w-5 h-5 text-primary"
-                />
+                <ChevronRight strokeWidth={3} className="w-5 h-5 " />
               </button>
             </div>
             <div className="flex justify-center items-center gap-1 my-1 ">
@@ -91,9 +117,7 @@ const NewWorkspace = ({
                   key={index}
                   onClick={() => setCurrentPage(index)}
                   className={`w-1.5 h-1.5 rounded-full cursor-pointer transition-all duration-300 ${
-                    currentPage === index
-                      ? "bg-primary scale-125"
-                      : "bg-primary/20"
+                    currentPage === index ? "bg-text scale-125" : "bg-text/20"
                   }`}
                   aria-label={`Go to page ${index + 1}`}
                 />
