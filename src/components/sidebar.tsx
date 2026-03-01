@@ -1,10 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { routes } from "../routes";
+import { systemRoutes } from "../routes/system";
 import { Route } from "../types";
 import AnimatedLogo from "./AnimatedLogo";
 import useSideBarStore from "../stores/useSideBar";
 
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, LogOut } from "lucide-react";
+import { Button } from "./ui/button";
 
 const Sidebar = () => {
   const isOpen = useSideBarStore((state) => state.isOpen);
@@ -31,15 +32,15 @@ const Sidebar = () => {
           }`}
         />
       </div>
-      <nav className="flex-1 flex gap-2 flex-col space-y-1 px-2 py-4 mt-5">
-        {routes.map((route: Route) => (
+      <nav className="flex-1 flex gap-2 flex-col space-y-1 px-2 mt-8">
+        {systemRoutes.map((route: Route) => (
           <NavLink
             key={route.name}
             to={route.path}
             className={({ isActive }) => `
               group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-all duration-500
-              ${isActive ? "text-primary" : " hover:text-primary"}
-              ${route.name === "Settings" ? "mt-auto pb-0" : ""}
+              ${isActive ? "text-primary" : " hover:text-primary/70"}
+              ${route.name === "Settings" ? "pb-0 mt-auto" : ""}
             `}
           >
             <route.icon
@@ -56,6 +57,18 @@ const Sidebar = () => {
           </NavLink>
         ))}
       </nav>
+      <div className="px-2 py-4">
+        <Button className="w-full justify-start" variant={"ghost"}>
+          <LogOut />
+          <span
+            className={` overflow-hidden transition-all duration-500 ${
+              !isOpen ? "w-0" : "w-fit"
+            }`}
+          >
+            Logout
+          </span>
+        </Button>
+      </div>
     </div>
   );
 };

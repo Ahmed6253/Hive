@@ -7,6 +7,12 @@ export interface Route {
   icon: React.ComponentType<SVGProps<SVGSVGElement>>;
 }
 
+export interface AuthRoute {
+  path: string;
+  name: string;
+  element: React.ReactNode;
+}
+
 // We can add more interfaces here as needed, for example:
 export interface User {
   id: string;

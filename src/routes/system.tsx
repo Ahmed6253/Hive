@@ -12,7 +12,7 @@ import Rewards from "../pages/Rewards";
 import Settings from "../pages/Settings";
 import { Route } from "../types";
 
-export const routes: Route[] = [
+export const systemRoutes: Route[] = [
   {
     path: "/",
     name: "Home",
