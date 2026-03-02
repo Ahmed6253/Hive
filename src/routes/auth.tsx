@@ -1,5 +1,5 @@
 import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
+import Register from "../pages/auth/register/Register";
 import { AuthRoute } from "../types";
 
 export const authRoutes: AuthRoute[] = [

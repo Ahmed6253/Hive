@@ -1,11 +1,21 @@
-const AnimatedLogo = ({ isOpen }: { isOpen: boolean }) => {
+const AnimatedLogo = ({
+  isOpen,
+  showName = true,
+  className = "",
+  logoWidth = 25,
+}: {
+  isOpen: boolean;
+  showName?: boolean;
+  className?: string;
+  logoWidth?: number;
+}) => {
   return (
-    <div className="flex items-center gap-3 mt-4">
+    <div className={`flex items-center gap-3 mt-4 ${className}`}>
       <svg
         className={`${
           !isOpen ? "rotate-90 ml-2" : ""
         } transition-all duration-500`}
-        width="25"
+        width={logoWidth}
         viewBox="0 0 32 65"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -50,7 +60,7 @@ const AnimatedLogo = ({ isOpen }: { isOpen: boolean }) => {
 
       <p
         className={`tracking-[0.2em] font-semibold text-2xl mt-3 overflow-hidden transition-all duration-500 ${
-          isOpen ? "w-fit" : "w-0"
+          isOpen && showName ? "w-fit" : "w-0"
         } `}
       >
         HIVE

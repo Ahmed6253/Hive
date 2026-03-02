@@ -4,12 +4,30 @@ import { Route } from "../types";
 import AnimatedLogo from "./AnimatedLogo";
 import useSideBarStore from "../stores/useSideBar";
 
-import { ChevronLeft, LogOut } from "lucide-react";
+import { ChevronLeft, LoaderCircle, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useMutation } from "@tanstack/react-query";
+import { logoutUser } from "@/services/auth";
+import toast from "react-hot-toast";
 
 const Sidebar = () => {
   const isOpen = useSideBarStore((state) => state.isOpen);
   const toggleSideBar = useSideBarStore((state) => state.toggleSideBar);
+
+  const removeUser = useAuthStore((state) => state.removeUser);
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: logoutUser,
+    onSuccess: () => {
+      removeUser();
+      toast.success("Logged out successfully!");
+    },
+  });
+
+  const handleLogout = () => {
+    mutate();
+  };
 
   return (
     <div
@@ -58,8 +76,17 @@ const Sidebar = () => {
         ))}
       </nav>
       <div className="px-2 py-4">
-        <Button className="w-full justify-start" variant={"ghost"}>
-          <LogOut />
+        <Button
+          className="w-full justify-start"
+          variant={"ghost"}
+          onClick={handleLogout}
+        >
+          {isPending ? (
+            <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <LogOut />
+          )}
+
           <span
             className={` overflow-hidden transition-all duration-500 ${
               !isOpen ? "w-0" : "w-fit"
