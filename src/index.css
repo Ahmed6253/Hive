@@ -132,17 +132,17 @@
   }
 }
 #beeLoader {
-  animation: rotate 0.8s ease-in-out;
+  animation: rotate 0.3s ease-in-out;
   transform: rotate(-90deg);
 }
 
 #wing {
-  animation: wing 2s ease-in-out;
+  animation: wing 0.6s ease-in-out;
   transform: translateX(-4px);
 }
 
 #head {
-  animation: head 1.5s ease-in-out;
+  animation: head 0.5s ease-in-out;
   transform: translateX(26px);
 }
 

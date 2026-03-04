@@ -30,6 +30,7 @@ export default function Login() {
   const { mutate, isPending } = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
+      if (!data) return;
       toast.success("Logged in successfully!");
       saveUser(data);
     },

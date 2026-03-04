@@ -12,18 +12,18 @@ import { LoaderCircle } from "lucide-react";
 
 export default function Register() {
   const saveUser = useAuthStore((state: AuthState) => state.saveUser);
+  const normalizedInput: RegisterInput = {
+    name: "",
+    email: "",
+    password: "",
+    passwordConfirmation: "",
+  };
 
   const [formData, setFormData] = useState<RegisterInput>({
-    name: "",
-    email: "",
-    password: "",
+    ...normalizedInput,
   });
 
-  const [errors, setErrors] = useState<RegisterInput>({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const [errors, setErrors] = useState<RegisterInput>({ ...normalizedInput });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -32,6 +32,7 @@ export default function Register() {
   const { mutate, isPending } = useMutation({
     mutationFn: registerUser,
     onSuccess: (data) => {
+      if (!data) return;
       toast.success("Registration successful!");
       saveUser(data);
     },
@@ -40,17 +41,13 @@ export default function Register() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({
-      name: "",
-      email: "",
-      password: "",
+      ...normalizedInput,
     });
     const result = registerSchema.safeParse(formData);
-    console.log("Validation result:", result);
+
     if (!result.success) {
       const validationErrors: RegisterInput = {
-        name: "",
-        email: "",
-        password: "",
+        ...normalizedInput,
       };
       result.error.issues.forEach((err) => {
         const field = err.path[0] as keyof RegisterInput;
@@ -63,7 +60,7 @@ export default function Register() {
       return;
     }
 
-    mutate(result.data);
+    mutate(formData);
   };
 
   return (
@@ -108,6 +105,17 @@ export default function Register() {
             placeholder="••••••••"
             error={errors.password}
             value={formData.password}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="passwordConfirmation">Confirm Password</Label>
+          <Input
+            id="passwordConfirmation"
+            type="password"
+            placeholder="••••••••"
+            // error={errors.passwordConfirmation}
+            value={formData.passwordConfirmation}
             onChange={handleChange}
           />
         </div>
