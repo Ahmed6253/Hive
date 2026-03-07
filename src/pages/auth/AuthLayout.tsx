@@ -35,7 +35,7 @@ const features = [
 
 export default function AuthLayout() {
   return (
-    <div className="min-h-screen lg:mx-8 mx-20 grid grid-cols-1 lg:grid-cols-2">
+    <div className="min-h-screen lg:mx-8 md:mx-40 mx-8 grid grid-cols-1 lg:grid-cols-2">
       {/* Left branding panel */}
       <div className="hidden opacity-80  lg:flex rounded-lg my-12 mx-5 flex-col justify-between relative overflow-hidden bg-card/30 px-10 pt-10 pb-5 ">
         {/* Decorative hexagons */}

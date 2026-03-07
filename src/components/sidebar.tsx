@@ -62,7 +62,7 @@ const Sidebar = () => {
             `}
           >
             <route.icon
-              className="mr-3 h-6 w-6 flex-shrink-0"
+              className="mr-3 h-5 w-5 flex-shrink-0"
               aria-hidden="true"
             />
             <span
@@ -77,21 +77,17 @@ const Sidebar = () => {
       </nav>
       <div className="px-2 py-4">
         <Button
-          className="w-full justify-start"
+          className="w-full justify-start transition-all duration-500"
           variant={"ghost"}
           onClick={handleLogout}
         >
           {isPending ? (
             <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
           ) : (
-            <LogOut />
+            <LogOut className="mr-2 h-4 w-4" />
           )}
 
-          <span
-            className={` overflow-hidden transition-all duration-500 ${
-              !isOpen ? "w-0" : "w-fit"
-            }`}
-          >
+          <span className={` overflow-hidden  ${!isOpen ? "w-0" : "w-fit"}`}>
             Logout
           </span>
         </Button>
