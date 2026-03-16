@@ -45,11 +45,11 @@ export default function AuthLayout() {
         />
         <HexDecor
           size={220}
-          className="absolute bottom-10 -right-12 text-primary opacity-10 -rotate-6"
+          className="absolute bottom-10 -right-12 text-primary opacity-5 -rotate-6"
         />
         <HexDecor
           size={110}
-          className="absolute top-1/2 right-16 text-accent opacity-15"
+          className="absolute top-1/2 right-16 text-accent opacity-5"
         />
 
         {/* Logo + name */}
@@ -82,7 +82,7 @@ export default function AuthLayout() {
                 key={f.label}
                 className="flex text-primary items-center gap-3 text-sm"
               >
-                <Hexagon className="w-4 h-4" />
+                <Hexagon className="w-4 h-4 " />
                 <span className="text-text">{f.label}</span>
               </li>
             ))}
