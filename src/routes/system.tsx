@@ -4,6 +4,7 @@ import {
   DocumentTextIcon,
   GiftIcon,
   Cog6ToothIcon,
+  RectangleStackIcon,
 } from "@heroicons/react/24/solid";
 import Home from "../pages/Home";
 import Workspace from "../pages/Workspace/Workspace";
@@ -11,6 +12,7 @@ import Notes from "../pages/Notes";
 import Rewards from "../pages/Rewards";
 import Settings from "../pages/Settings";
 import { Route } from "../types";
+import Tasks from "@/pages/tasks/Tasks";
 
 export const systemRoutes: Route[] = [
   {
@@ -21,9 +23,15 @@ export const systemRoutes: Route[] = [
   },
   {
     path: "/workspaces",
-    name: "Workspaces",
+    name: "Workspace",
     element: <Workspace />,
     icon: BriefcaseIcon,
+  },
+  {
+    path: "/tasks",
+    name: "Tasks",
+    element: <Tasks />,
+    icon: RectangleStackIcon,
   },
   {
     path: "/notes",

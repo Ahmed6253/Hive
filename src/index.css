@@ -11,6 +11,7 @@
   --color-accent: var(--accent);
   --color-success: var(--success);
   --color-error: var(--error);
+  --color-alert: var(--alert);
   --color-text: var(--text);
   --color-muted: var(--muted);
   --color-modal: var(--modal);
@@ -37,8 +38,9 @@
   --primary: rgb(236, 167, 137);
   --secondary: rgba(147, 145, 133, 1);
   --accent: rgba(165, 123, 93, 1);
-  --success: rgba(136, 172, 161, 1);
+  --success: rgb(48, 196, 151);
   --error: rgb(155, 66, 71);
+  --alert: rgb(235, 188, 47);
   --text: rgba(238, 237, 235, 1);
   --radius: 0.625rem;
 
