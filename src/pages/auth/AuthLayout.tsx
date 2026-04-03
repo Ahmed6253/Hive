@@ -98,7 +98,7 @@ export default function AuthLayout() {
       {/* Right auth form panel */}
       <div className="w-full p-8 lg:p-20 rounded-lg lg:bg-transparent bg-card/20 my-auto">
         <Outlet />
-        <div className="relative lg:hidden flex z-10 items-center justify-center mt-12 gap-2">
+        <div className="relative lg:hidden flex z-10 items-center justify-center mt-6 gap-2">
           <img src={Logo} alt="Hive Logo" className="w-7 -rotate-90" />
           <div>
             <p className="tracking-[0.35em] font-bold text-text">HIVE</p>

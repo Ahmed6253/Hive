@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import PageHeader from "@/components/PageHeader";
 
 interface Column {
   id: string;
@@ -51,16 +52,14 @@ const tableData: Task[] = [
 const Tasks = () => {
   return (
     <>
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold">Tasks</h1>
-        <p className="text-muted-foreground">
-          Manage your tasks and deadlines.
-        </p>
-      </div>
+      <PageHeader
+        title="Tasks"
+        description="Manage your tasks and deadlines."
+      />
 
-      <Table className="bg-background rounded">
+      <Table className="bg-background rounded-md">
         <TableHeader>
-          <TableRow>
+          <TableRow className="border-card">
             {columns.map((column) => (
               <TableHead key={column.id}>{column.label}</TableHead>
             ))}
