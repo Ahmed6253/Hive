@@ -1,97 +1,106 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import * as React from "react";
 import PageHeader from "@/components/PageHeader";
+import { Button } from "@/components/ui/button";
+import GroupCard, { Group } from "@/components/GroupCard";
+import CreateGroupModal from "@/components/CreateGroupModal";
+import { Icons } from "@/components/ui/icons";
 
-interface Column {
+type Task = {
   id: string;
-  label: string;
-}
-
-interface Task {
   name: string;
-  dueDate: string;
+  dueDate?: string;
   status: string;
   difficulty: "Easy" | "Medium" | "Hard";
-}
+};
 
-const columns: Column[] = [
-  { id: "name", label: "Task Name" },
-  { id: "dueDate", label: "Due Date" },
-  { id: "status", label: "Status" },
-  { id: "difficulty", label: "Difficulty" },
-];
+export default function Tasks() {
+  const [groups, setGroups] = React.useState<Group[]>(() => {
+    try {
+      const raw = localStorage.getItem("hive_groups");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
 
-const tableData: Task[] = [
-  {
-    name: "Task 1",
-    dueDate: "2024-06-30",
-    status: "In Progress",
-    difficulty: "Medium",
-  },
-  {
-    name: "Task 2",
-    dueDate: "2024-07-15",
-    status: "Not Started",
-    difficulty: "Hard",
-  },
-  {
-    name: "Task 3",
-    dueDate: "2024-07-01",
-    status: "Completed",
-    difficulty: "Easy",
-  },
-];
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("hive_groups", JSON.stringify(groups));
+    } catch {}
+  }, [groups]);
 
-const Tasks = () => {
+  const addGroup = (g: Omit<Group, "id" | "tasks">) => {
+    setGroups((p) => [{ id: `${Date.now()}`, tasks: [], ...g }, ...p]);
+  };
+
+  const addTaskToGroup = (groupId: string, task: Task) =>
+    setGroups((p) =>
+      p.map((g) =>
+        g.id === groupId ? { ...g, tasks: [...g.tasks, task] } : g,
+      ),
+    );
+
+  const updateTaskInGroup = (
+    groupId: string,
+    taskId: string,
+    patch: Partial<Task>,
+  ) =>
+    setGroups((p) =>
+      p.map((g) =>
+        g.id === groupId
+          ? {
+              ...g,
+              tasks: g.tasks.map((t) =>
+                t.id === taskId ? { ...t, ...patch } : t,
+              ),
+            }
+          : g,
+      ),
+    );
+
+  const [showCreate, setShowCreate] = React.useState(false);
+
   return (
     <>
       <PageHeader
         title="Tasks"
-        description="Manage your tasks and deadlines."
+        description="Groups organize related tasks. Create groups and add tasks."
       />
 
-      <Table className="bg-background rounded-md">
-        <TableHeader>
-          <TableRow className="border-card">
-            {columns.map((column) => (
-              <TableHead key={column.id}>{column.label}</TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tableData.map((row, index) => (
-            <TableRow key={index}>
-              <TableCell>{row.name}</TableCell>
-              <TableCell>{row.dueDate}</TableCell>
-              <TableCell>{row.status}</TableCell>
-              <TableCell>
-                <Badge
-                  variant={
-                    row.difficulty === "Easy"
-                      ? "easy"
-                      : row.difficulty === "Medium"
-                        ? "medium"
-                        : row.difficulty === "Hard"
-                          ? "hard"
-                          : "default"
-                  }
-                >
-                  {row.difficulty}
-                </Badge>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <div className="flex items-center justify-end mb-4">
+        <Button onClick={() => setShowCreate(true)}>New Group</Button>
+      </div>
+
+      <div className="grid gap-4">
+        {groups.length === 0 ? (
+          <div className="text-muted-foreground">
+            No groups yet. Create one to get started.
+          </div>
+        ) : (
+          groups.map((g) => (
+            <GroupCard
+              key={g.id}
+              group={g}
+              onAddTask={addTaskToGroup}
+              onUpdateTask={updateTaskInGroup}
+            />
+          ))
+        )}
+      </div>
+
+      <CreateGroupModal
+        show={showCreate}
+        toggleShow={() => setShowCreate(false)}
+        onCreate={(g) => {
+          if (!g.name) return;
+          addGroup({
+            name: g.name,
+            description: g.description,
+            iconKey: g.iconKey as keyof typeof Icons,
+          });
+          setShowCreate(false);
+        }}
+      />
     </>
   );
-};
-
-export default Tasks;
+}

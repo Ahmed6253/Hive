@@ -37,10 +37,10 @@
   --card: rgb(76, 83, 94);
   --primary: rgb(236, 167, 137);
   --secondary: rgba(147, 145, 133, 1);
-  --accent: rgba(165, 123, 93, 1);
+  --accent: rgb(189, 189, 189);
   --success: rgb(37, 146, 114);
   --error: rgb(143, 49, 54);
-  --alert: rgb(143, 121, 56);
+  --alert: rgb(189, 153, 48);
   --text: rgba(238, 237, 235, 1);
   --radius: 0.625rem;
 
