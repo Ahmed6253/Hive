@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePickerDemo } from "@/components/ui/DatePickerDemo";
-import { ChevronDown, Plus, Trash2, Calendar } from "lucide-react";
+import { ChevronDown, Plus, Trash2, Calendar, Minus } from "lucide-react";
 import ConfirmationDialog from "./ConfirmationDialog";
 
 type Task = {
@@ -228,7 +228,7 @@ export default function GroupCard({
                   onDeleteGroup(group.id);
                 }}
               >
-                <Trash2 className="w-4 h-4" />
+                <Minus className="w-4 h-4" />
               </Button>
             )}
             <ChevronDown
