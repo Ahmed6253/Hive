@@ -1,4 +1,3 @@
-import * as React from "react";
 import Modal from "@/components/Modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import IconCarousel from "@/components/IconCarousel";
 import { Icons } from "@/components/ui/icons";
 import Label from "./ui/label";
+import { useState } from "react";
 
 type CreatePayload = {
   name: string;
@@ -22,7 +22,7 @@ export default function CreateGroupModal({
   toggleShow: () => void;
   onCreate: (payload: CreatePayload) => void;
 }) {
-  const [form, setForm] = React.useState<{
+  const [form, setForm] = useState<{
     name: string;
     description: string;
     iconKey: string;

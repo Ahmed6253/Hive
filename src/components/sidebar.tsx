@@ -77,7 +77,7 @@ const Sidebar = () => {
       </nav>
       <div className="px-2 py-4">
         <Button
-          className="w-full justify-start transition-all duration-500"
+          className="w-full justify-start hover:text-primary transition-all duration-500"
           variant={"ghost"}
           onClick={handleLogout}
         >

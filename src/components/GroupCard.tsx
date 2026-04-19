@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -19,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DatePickerDemo } from "@/components/ui/DatePickerDemo";
 import { ChevronDown, Plus, Trash2, Calendar, Minus } from "lucide-react";
 import ConfirmationDialog from "./ConfirmationDialog";
+import { useEffect, useState } from "react";
 
 type Task = {
   id: string;
@@ -84,20 +84,20 @@ export default function GroupCard({
   forceOpen?: boolean;
   tasks: Task[];
 }) {
-  const [open, setOpen] = React.useState(defaultOpen);
+  const [open, setOpen] = useState(defaultOpen);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (forceOpen !== undefined) {
       setOpen(forceOpen);
     }
   }, [forceOpen]);
-  const [showAddForm, setShowAddForm] = React.useState(false);
-  const [deleteConfirm, setDeleteConfirm] = React.useState<{
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
     show: boolean;
     taskId?: string;
     taskName?: string;
   }>({ show: false });
-  const [checked, setChecked] = React.useState<Record<string, boolean>>({
+  const [checked, setChecked] = useState<Record<string, boolean>>({
     ...tasks.reduce(
       (acc, t) => {
         if (t.status === "Completed") {
@@ -117,7 +117,7 @@ export default function GroupCard({
       ? Math.round((completedCount / group.tasks.length) * 100)
       : 0;
 
-  const [form, setForm] = React.useState({
+  const [form, setForm] = useState({
     name: "",
     dueDate: "",
     status: "Not Started",

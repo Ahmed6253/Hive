@@ -1,4 +1,3 @@
-import * as React from "react";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import GroupCard, { Group } from "@/components/GroupCard";
@@ -6,6 +5,7 @@ import CreateGroupModal from "@/components/CreateGroupModal";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Icons } from "@/components/ui/icons";
 import { Plus, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type Task = {
   id: string;
@@ -16,7 +16,7 @@ type Task = {
 };
 
 export default function Tasks() {
-  const [groups, setGroups] = React.useState<Group[]>(() => {
+  const [groups, setGroups] = useState<Group[]>(() => {
     try {
       const raw = localStorage.getItem("hive_groups");
       return raw ? JSON.parse(raw) : [];
@@ -24,9 +24,9 @@ export default function Tasks() {
       return [];
     }
   });
-  const [allCollapsed, setAllCollapsed] = React.useState(false);
+  const [allCollapsed, setAllCollapsed] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       localStorage.setItem("hive_groups", JSON.stringify(groups));
     } catch {}
@@ -76,13 +76,13 @@ export default function Tasks() {
     setGroups((p) => p.filter((g) => g.id !== groupId));
   };
 
-  const [deleteConfirm, setDeleteConfirm] = React.useState<{
+  const [deleteConfirm, setDeleteConfirm] = useState<{
     show: boolean;
     groupId?: string;
     groupName?: string;
   }>({ show: false });
 
-  const [showCreate, setShowCreate] = React.useState(false);
+  const [showCreate, setShowCreate] = useState(false);
 
   return (
     <>

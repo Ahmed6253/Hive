@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   Carousel,
   CarouselContent,
@@ -8,6 +7,7 @@ import {
 } from "@/components/ui/carousel";
 import { Icons } from "@/components/ui/icons";
 import type { CarouselApi } from "@/components/ui/carousel";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 
 export default function IconCarousel({
   value,
@@ -16,12 +16,12 @@ export default function IconCarousel({
   value?: string;
   onChange?: (key: string) => void;
 }) {
-  const keys = React.useMemo(() => Object.keys(Icons), []);
+  const keys = useMemo(() => Object.keys(Icons), []);
   const pageSize = 20;
-  const [api, setApi] = React.useState<CarouselApi>();
-  const [currentPage, setCurrentPage] = React.useState(0);
+  const [api, setApi] = useState<CarouselApi>();
+  const [currentPage, setCurrentPage] = useState(0);
 
-  const pages = React.useMemo(() => {
+  const pages = useMemo(() => {
     const out: string[][] = [];
     for (let i = 0; i < keys.length; i += pageSize) {
       out.push(keys.slice(i, i + pageSize));
@@ -29,7 +29,7 @@ export default function IconCarousel({
     return out;
   }, [keys]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!api) return;
     const onSelect = () => setCurrentPage(api.selectedScrollSnap());
     api.on("select", onSelect);
@@ -51,9 +51,7 @@ export default function IconCarousel({
             >
               {isVisible(idx)
                 ? page.map((k) => {
-                    const Icon = Icons[
-                      k as keyof typeof Icons
-                    ] as React.ReactNode;
+                    const Icon = Icons[k as keyof typeof Icons] as ReactNode;
                     return (
                       <button
                         key={k}
