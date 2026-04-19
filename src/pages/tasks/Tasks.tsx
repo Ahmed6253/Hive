@@ -4,13 +4,7 @@ import { Button } from "@/components/ui/button";
 import GroupCard, { Group } from "@/components/GroupCard";
 import CreateGroupModal from "@/components/CreateGroupModal";
 import { Icons } from "@/components/ui/icons";
-import {
-  Plus,
-  PanelTopClose,
-  ChevronDown,
-  ChevronsDownUp,
-  ChevronsUpDown,
-} from "lucide-react";
+import { Plus, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 
 type Task = {
   id: string;
@@ -52,7 +46,7 @@ export default function Tasks() {
     groupId: string,
     taskId: string,
     patch: Partial<Task>,
-  ) =>
+  ) => {
     setGroups((p) =>
       p.map((g) =>
         g.id === groupId
@@ -65,6 +59,17 @@ export default function Tasks() {
           : g,
       ),
     );
+  };
+
+  const deleteTaskInGroup = (groupId: string, taskId: string) => {
+    setGroups((p) =>
+      p.map((g) =>
+        g.id === groupId
+          ? { ...g, tasks: g.tasks.filter((t) => t.id !== taskId) }
+          : g,
+      ),
+    );
+  };
 
   const [showCreate, setShowCreate] = React.useState(false);
 
@@ -73,29 +78,29 @@ export default function Tasks() {
       <PageHeader
         title="Tasks"
         description="Groups organize related tasks. Create groups and add tasks."
-      />
-
-      <div className="flex items-center justify-end gap-2 mb-4">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setAllCollapsed(!allCollapsed)}
-          title={allCollapsed ? "Expand all" : "Collapse all"}
-        >
-          {allCollapsed ? (
-            <ChevronsUpDown className="w-4 h-4 transition-transform duration-200" />
-          ) : (
-            <ChevronsDownUp className="w-4 h-4 transition-transform duration-200" />
-          )}
-        </Button>
-        <Button
-          size="icon"
-          onClick={() => setShowCreate(true)}
-          title="New group"
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
-      </div>
+      >
+        <div className="flex items-center justify-end gap-2 mb-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setAllCollapsed(!allCollapsed)}
+            title={allCollapsed ? "Expand all" : "Collapse all"}
+          >
+            {allCollapsed ? (
+              <ChevronsUpDown className="w-4 h-4 transition-transform duration-200" />
+            ) : (
+              <ChevronsDownUp className="w-4 h-4 transition-transform duration-200" />
+            )}
+          </Button>
+          <Button
+            size="icon"
+            onClick={() => setShowCreate(true)}
+            title="New group"
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+      </PageHeader>
 
       <div className="grid gap-4">
         {groups.length === 0 ? (
@@ -111,6 +116,8 @@ export default function Tasks() {
               onUpdateTask={updateTaskInGroup}
               defaultOpen={!allCollapsed}
               forceOpen={!allCollapsed}
+              onDeleteTask={deleteTaskInGroup}
+              tasks={g.tasks}
             />
           ))
         )}

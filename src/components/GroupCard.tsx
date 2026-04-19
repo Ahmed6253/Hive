@@ -17,17 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePickerDemo } from "@/components/ui/DatePickerDemo";
-import {
-  Check,
-  ChevronDown,
-  ChevronUp,
-  PanelTopClose,
-  Plus,
-  X,
-  Trash2,
-  Calendar,
-  Clock,
-} from "lucide-react";
+import { ChevronDown, Plus, Trash2, Calendar } from "lucide-react";
 
 type Task = {
   id: string;
@@ -79,12 +69,16 @@ export default function GroupCard({
   onUpdateTask,
   defaultOpen = true,
   forceOpen,
+  onDeleteTask,
+  tasks,
 }: {
   group: Group;
   onAddTask: (groupId: string, task: Task) => void;
   onUpdateTask: (groupId: string, taskId: string, patch: Partial<Task>) => void;
+  onDeleteTask?: (groupId: string, taskId: string) => void;
   defaultOpen?: boolean;
   forceOpen?: boolean;
+  tasks: Task[];
 }) {
   const [open, setOpen] = React.useState(defaultOpen);
 
@@ -94,7 +88,17 @@ export default function GroupCard({
     }
   }, [forceOpen]);
   const [showAddForm, setShowAddForm] = React.useState(false);
-  const [checked, setChecked] = React.useState<Record<string, boolean>>({});
+  const [checked, setChecked] = React.useState<Record<string, boolean>>({
+    ...tasks.reduce(
+      (acc, t) => {
+        if (t.status === "Completed") {
+          acc[t.id] = true;
+        }
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    ),
+  });
 
   const completedCount = group.tasks.filter(
     (t) => checked[t.id] || t.status === "Completed",
@@ -133,6 +137,34 @@ export default function GroupCard({
     setShowAddForm(false);
   };
 
+  const handleUpdateTask = (taskId: string, patch: Partial<Task>) => {
+    if (patch.status === "Completed") {
+      setChecked((p) => ({ ...p, [taskId]: true }));
+    } else {
+      setChecked((p) => {
+        const copy = { ...p };
+        delete copy[taskId];
+        return copy;
+      });
+    }
+    onUpdateTask(group.id, taskId, patch);
+  };
+
+  const checkedTasks = (taskId: string) => {
+    if (checked[taskId]) {
+      setChecked((p) => {
+        const copy = { ...p };
+        delete copy[taskId];
+        return copy;
+      });
+
+      onUpdateTask(group.id, taskId, { status: "Not Started" });
+    } else {
+      setChecked((p) => ({ ...p, [taskId]: true }));
+      onUpdateTask(group.id, taskId, { status: "Completed" });
+    }
+  };
+
   const selectedFormDate = form.dueDate
     ? new Date(`${form.dueDate}T00:00:00`)
     : undefined;
@@ -148,7 +180,9 @@ export default function GroupCard({
             </div>
             <div className="text-left">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-base">{group.name}</span>
+                <span className="font-semibold text-base md:max-w-full max-w-[40%] truncate">
+                  {group.name}
+                </span>
                 <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                   {group.tasks.length}{" "}
                   {group.tasks.length === 1 ? "task" : "tasks"}
@@ -170,7 +204,7 @@ export default function GroupCard({
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
-                <span className="text-xs font-medium text-muted-foreground">
+                <span className="text-xs font-medium w-7 overflow-hidden text-muted-foreground">
                   {progressPercent}%
                 </span>
               </div>
@@ -186,11 +220,9 @@ export default function GroupCard({
         <CollapsibleContent>
           <div>
             {group.tasks.length === 0 ? (
-              <div className="px-5 py-8 text-center">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-muted/70 flex items-center justify-center">
-                  <Check className="w-6 h-6 opacity-30" />
-                </div>
+              <div className="px-5 py-5 flex flex-col items-center justify-center">
                 <p className="text-sm text-muted-foreground">No tasks yet</p>
+
                 <p className="text-xs text-muted-foreground/70 mt-1">
                   Add a task to get started
                 </p>
@@ -203,15 +235,10 @@ export default function GroupCard({
                 >
                   <Checkbox
                     aria-label="Mark complete"
-                    checked={!!checked[t.id]}
-                    onCheckedChange={(val) => {
-                      setChecked((p) => ({ ...p, [t.id]: Boolean(val) }));
-                      if (val) {
-                        onUpdateTask(group.id, t.id, { status: "Completed" });
-                      }
-                    }}
+                    checked={checked[t.id] || t.status === "Completed"}
+                    onCheckedChange={() => checkedTasks(t.id)}
                     className={`w-5 h-5 rounded-lg border-2 shrink-0 flex items-center justify-center transition-all duration-200 ${
-                      checked[t.id]
+                      checked[t.id] || t.status === "Completed"
                         ? "bg-success border-success scale-110"
                         : "border-border hover:border-primary"
                     }`}
@@ -231,13 +258,16 @@ export default function GroupCard({
                       <Select
                         value={t.status}
                         onValueChange={(v) =>
-                          onUpdateTask(group.id, t.id, { status: v })
+                          handleUpdateTask(t.id, {
+                            status: v as Task["status"],
+                          })
                         }
                       >
                         <SelectTrigger
                           className={`data-[size=default]:h-6 bg-transparent rounded-lg px-2 py-0.5 text-[11px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-3 ${getStatusPillClass(
                             t.status,
                           )}`}
+                          iconColor={getStatusPillClass(t.status)}
                         >
                           <SelectValue />
                         </SelectTrigger>
@@ -254,7 +284,7 @@ export default function GroupCard({
                       <Select
                         value={t.difficulty}
                         onValueChange={(v) =>
-                          onUpdateTask(group.id, t.id, {
+                          handleUpdateTask(t.id, {
                             difficulty: v as Task["difficulty"],
                           })
                         }
@@ -263,6 +293,7 @@ export default function GroupCard({
                           className={`data-[size=default]:h-6 bg-transparent rounded-lg px-2 py-0.5 text-[11px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-3 ${getDifficultyPillClass(
                             t.difficulty,
                           )}`}
+                          iconColor={getDifficultyPillClass(t.difficulty)}
                         >
                           <SelectValue />
                         </SelectTrigger>
@@ -285,9 +316,7 @@ export default function GroupCard({
                     variant="ghost"
                     size="icon-sm"
                     className="text-muted-foreground hover:text-error hov shrink-0"
-                    onClick={() =>
-                      onUpdateTask(group.id, t.id, { status: "Completed" })
-                    }
+                    onClick={() => onDeleteTask && onDeleteTask(group.id, t.id)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -349,7 +378,7 @@ export default function GroupCard({
                       Add Task
                     </Button>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       onClick={() => {
                         reset();
                         setShowAddForm(false);
@@ -370,7 +399,7 @@ export default function GroupCard({
                   setOpen(true);
                   setShowAddForm(true);
                 }}
-                className="w-full px-5 py-3 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground border-t border-border/50 hover:text-foreground bg-muted/30 hover:bg-background/30 transition-all duration-200"
+                className="w-full px-5 py-3 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground rounded-b-2xl border-2 border-dashed border-background/20 hover:text-foreground bg-muted/30 hover:bg-background/30 transition-all duration-200"
               >
                 <Plus className="w-4 h-4" />
                 Add new task
