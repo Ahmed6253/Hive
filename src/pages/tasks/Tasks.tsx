@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import GroupCard, { Group } from "@/components/GroupCard";
 import CreateGroupModal from "@/components/CreateGroupModal";
 import { Icons } from "@/components/ui/icons";
+import {
+  Plus,
+  PanelTopClose,
+  ChevronDown,
+  ChevronsDownUp,
+  ChevronsUpDown,
+} from "lucide-react";
 
 type Task = {
   id: string;
@@ -22,6 +29,7 @@ export default function Tasks() {
       return [];
     }
   });
+  const [allCollapsed, setAllCollapsed] = React.useState(false);
 
   React.useEffect(() => {
     try {
@@ -67,8 +75,26 @@ export default function Tasks() {
         description="Groups organize related tasks. Create groups and add tasks."
       />
 
-      <div className="flex items-center justify-end mb-4">
-        <Button onClick={() => setShowCreate(true)}>New Group</Button>
+      <div className="flex items-center justify-end gap-2 mb-4">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setAllCollapsed(!allCollapsed)}
+          title={allCollapsed ? "Expand all" : "Collapse all"}
+        >
+          {allCollapsed ? (
+            <ChevronsUpDown className="w-4 h-4 transition-transform duration-200" />
+          ) : (
+            <ChevronsDownUp className="w-4 h-4 transition-transform duration-200" />
+          )}
+        </Button>
+        <Button
+          size="icon"
+          onClick={() => setShowCreate(true)}
+          title="New group"
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
       </div>
 
       <div className="grid gap-4">
@@ -83,6 +109,8 @@ export default function Tasks() {
               group={g}
               onAddTask={addTaskToGroup}
               onUpdateTask={updateTaskInGroup}
+              defaultOpen={!allCollapsed}
+              forceOpen={!allCollapsed}
             />
           ))
         )}

@@ -41,36 +41,47 @@ export default function IconCarousel({
   const isVisible = (idx: number) => Math.abs(idx - currentPage) <= 1;
 
   return (
-    <div className="relative">
-      <Carousel setApi={setApi} className="w-[75%] mx-auto">
-        <CarouselContent className="pb-4">
+    <div className="relative bg-muted/30 rounded-xl p-4">
+      <Carousel setApi={setApi} className="w-[85%] mx-auto">
+        <CarouselContent className="py-2">
           {pages.map((page, idx) => (
             <CarouselItem
               key={`page-${idx}`}
               className="grid grid-cols-5 gap-2"
             >
               {isVisible(idx)
-                ? page.map((k) => (
-                    <button
-                      key={k}
-                      type="button"
-                      aria-label={k}
-                      onClick={() => onChange?.(k)}
-                      className={`p-2 rounded-md transition-colors w-fit h-fit mx-auto flex items-center justify-center ${
-                        k === value ? "bg-muted" : "hover:bg-muted"
-                      }`}
-                    >
-                      <div className="flex items-center justify-center">
-                        {Icons[k]}
-                      </div>
-                    </button>
-                  ))
+                ? page.map((k) => {
+                    const Icon = Icons[
+                      k as keyof typeof Icons
+                    ] as React.ReactNode;
+                    return (
+                      <button
+                        key={k}
+                        type="button"
+                        aria-label={k}
+                        onClick={() => onChange?.(k)}
+                        className={`p-3 rounded-xl transition-all duration-200 w-fit h-fit mx-auto flex items-center justify-center ${
+                          k === value
+                            ? "bg-primary text-primary-foreground shadow-md"
+                            : "hover:bg-muted hover:scale-105"
+                        }`}
+                      >
+                        <div className="flex items-center justify-center">
+                          {Icon}
+                        </div>
+                      </button>
+                    );
+                  })
                 : null}
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
+        {pages.length > 1 && (
+          <>
+            <CarouselPrevious className="left-0 bg-background/80" />
+            <CarouselNext className="right-0 bg-background/80" />
+          </>
+        )}
       </Carousel>
     </div>
   );
