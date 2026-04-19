@@ -51,7 +51,12 @@ export default function CreateGroupModal({
   };
 
   return (
-    <Modal show={show} toggleShow={toggleShow} title="Create group">
+    <Modal
+      className="w-[500px]"
+      show={show}
+      toggleShow={toggleShow}
+      title="Create group"
+    >
       <div className="space-y-3">
         <Label htmlFor="group-name" className="text-sm">
           Group Name
@@ -73,9 +78,6 @@ export default function CreateGroupModal({
         />
 
         <div>
-          <Label htmlFor="group-icon" className="text-sm">
-            Icon
-          </Label>
           <IconCarousel
             value={form.iconKey}
             onChange={(k) => setForm({ ...form, iconKey: k })}

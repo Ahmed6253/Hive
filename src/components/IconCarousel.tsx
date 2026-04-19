@@ -43,7 +43,7 @@ export default function IconCarousel({
   return (
     <div className="relative bg-muted/30 rounded-xl p-4">
       <Carousel setApi={setApi} className="w-[85%] mx-auto">
-        <CarouselContent className="py-2">
+        <CarouselContent className="py-2 ">
           {pages.map((page, idx) => (
             <CarouselItem
               key={`page-${idx}`}
@@ -62,8 +62,8 @@ export default function IconCarousel({
                         onClick={() => onChange?.(k)}
                         className={`p-3 rounded-xl transition-all duration-200 w-fit h-fit mx-auto flex items-center justify-center ${
                           k === value
-                            ? "bg-primary text-primary-foreground shadow-md"
-                            : "hover:bg-muted hover:scale-105"
+                            ? "bg-background text-primary-foreground shadow-md"
+                            : "hover:bg-muted/40 hover:scale-105"
                         }`}
                       >
                         <div className="flex items-center justify-center">
@@ -78,8 +78,8 @@ export default function IconCarousel({
         </CarouselContent>
         {pages.length > 1 && (
           <>
-            <CarouselPrevious className="left-0 bg-background/80" />
-            <CarouselNext className="right-0 bg-background/80" />
+            <CarouselPrevious className="-left-10 bg-background/80 border-none" />
+            <CarouselNext className="-right-10 bg-background/80 border-none" />
           </>
         )}
       </Carousel>
