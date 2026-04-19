@@ -18,6 +18,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePickerDemo } from "@/components/ui/DatePickerDemo";
 import { ChevronDown, Plus, Trash2, Calendar } from "lucide-react";
+import ConfirmationDialog from "./ConfirmationDialog";
 
 type Task = {
   id: string;
@@ -34,6 +35,7 @@ export type Group = {
   iconKey: keyof typeof Icons;
   tasks: Task[];
   onDeleteTask?: (groupId: string, taskId: string) => void;
+  onDeleteGroup?: (groupId: string) => void;
 };
 
 function formatDate(raw?: string) {
@@ -70,12 +72,14 @@ export default function GroupCard({
   defaultOpen = true,
   forceOpen,
   onDeleteTask,
+  onDeleteGroup,
   tasks,
 }: {
   group: Group;
   onAddTask: (groupId: string, task: Task) => void;
   onUpdateTask: (groupId: string, taskId: string, patch: Partial<Task>) => void;
   onDeleteTask?: (groupId: string, taskId: string) => void;
+  onDeleteGroup?: (groupId: string) => void;
   defaultOpen?: boolean;
   forceOpen?: boolean;
   tasks: Task[];
@@ -88,6 +92,11 @@ export default function GroupCard({
     }
   }, [forceOpen]);
   const [showAddForm, setShowAddForm] = React.useState(false);
+  const [deleteConfirm, setDeleteConfirm] = React.useState<{
+    show: boolean;
+    taskId?: string;
+    taskName?: string;
+  }>({ show: false });
   const [checked, setChecked] = React.useState<Record<string, boolean>>({
     ...tasks.reduce(
       (acc, t) => {
@@ -209,6 +218,19 @@ export default function GroupCard({
                 </span>
               </div>
             )}
+            {onDeleteGroup && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground hover:text-error h-8 w-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteGroup(group.id);
+                }}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
             <ChevronDown
               className="w-4 h-4 opacity-40 transition-transform duration-300"
               style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
@@ -316,7 +338,13 @@ export default function GroupCard({
                     variant="ghost"
                     size="icon-sm"
                     className="text-muted-foreground hover:text-error hov shrink-0"
-                    onClick={() => onDeleteTask && onDeleteTask(group.id, t.id)}
+                    onClick={() => {
+                      setDeleteConfirm({
+                        show: true,
+                        taskId: t.id,
+                        taskName: t.name,
+                      });
+                    }}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -408,6 +436,18 @@ export default function GroupCard({
           </div>
         </CollapsibleContent>
       </Collapsible>
+      <ConfirmationDialog
+        show={deleteConfirm.show}
+        title="Delete Task"
+        description={`Are you sure you want to delete "${deleteConfirm.taskName}"? This action cannot be undone.`}
+        onConfirm={() => {
+          if (deleteConfirm.taskId && onDeleteTask) {
+            onDeleteTask(group.id, deleteConfirm.taskId);
+          }
+          setDeleteConfirm({ show: false });
+        }}
+        onCancel={() => setDeleteConfirm({ show: false })}
+      />
     </div>
   );
 }

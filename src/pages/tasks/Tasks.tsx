@@ -3,6 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import GroupCard, { Group } from "@/components/GroupCard";
 import CreateGroupModal from "@/components/CreateGroupModal";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Icons } from "@/components/ui/icons";
 import { Plus, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 
@@ -71,6 +72,16 @@ export default function Tasks() {
     );
   };
 
+  const deleteGroup = (groupId: string) => {
+    setGroups((p) => p.filter((g) => g.id !== groupId));
+  };
+
+  const [deleteConfirm, setDeleteConfirm] = React.useState<{
+    show: boolean;
+    groupId?: string;
+    groupName?: string;
+  }>({ show: false });
+
   const [showCreate, setShowCreate] = React.useState(false);
 
   return (
@@ -117,6 +128,14 @@ export default function Tasks() {
               defaultOpen={!allCollapsed}
               forceOpen={!allCollapsed}
               onDeleteTask={deleteTaskInGroup}
+              onDeleteGroup={(groupId) => {
+                const group = groups.find((g) => g.id === groupId);
+                setDeleteConfirm({
+                  show: true,
+                  groupId,
+                  groupName: group?.name,
+                });
+              }}
               tasks={g.tasks}
             />
           ))
@@ -135,6 +154,18 @@ export default function Tasks() {
           });
           setShowCreate(false);
         }}
+      />
+      <ConfirmationDialog
+        show={deleteConfirm.show}
+        title="Delete Group"
+        description={`Are you sure you want to delete "${deleteConfirm.groupName}"? All tasks in this group will also be deleted. This action cannot be undone.`}
+        onConfirm={() => {
+          if (deleteConfirm.groupId) {
+            deleteGroup(deleteConfirm.groupId);
+          }
+          setDeleteConfirm({ show: false });
+        }}
+        onCancel={() => setDeleteConfirm({ show: false })}
       />
     </>
   );

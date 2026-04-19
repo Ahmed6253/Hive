@@ -6,10 +6,12 @@ export default function Modal({
   title,
   show,
   toggleShow,
+  className = "w-[700px]",
 }: {
   children: React.ReactNode | React.ReactNode[];
   title: string;
   show: boolean;
+  className?: string;
   toggleShow: () => void;
 }) {
   const [isClose, setIsClose] = useState(false);
@@ -34,7 +36,7 @@ export default function Modal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-card mx-2 overflow-hidden from-bottom max-h-[70vh] min-w-[320px] w-[700px] p-4 rounded-lg space-y-2 overflow-y-auto ${
+        className={`bg-card mx-2 overflow-hidden from-bottom max-h-[70vh] min-w-[320px]  p-4 rounded-lg space-y-2 overflow-y-auto ${className} ${
           isClose && "back-bottom"
         }`}
       >
