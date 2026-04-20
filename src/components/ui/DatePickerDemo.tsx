@@ -21,7 +21,7 @@ export function DatePickerDemo({
 }) {
   const [date, setDate] = useState<Date | undefined>(value);
 
-  //   useEffect(() => setDate(value), [value]);
+  useEffect(() => setDate(value), [value]);
 
   return (
     <Popover>
