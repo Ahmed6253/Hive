@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 type Task = {
   id: string;
   name: string;
+  description?: string;
   dueDate?: string;
   status: string;
   difficulty: "Easy" | "Medium" | "Hard";

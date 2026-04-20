@@ -4,6 +4,7 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/ui/icons";
 import SimpleSelect from "@/components/Select";
@@ -23,6 +24,7 @@ import { useEffect, useState } from "react";
 type Task = {
   id: string;
   name: string;
+  description?: string;
   dueDate?: string;
   status: string;
   difficulty: "Easy" | "Medium" | "Hard";
@@ -119,6 +121,7 @@ export default function GroupCard({
 
   const [form, setForm] = useState({
     name: "",
+    description: "",
     dueDate: "",
     status: "Not Started",
     difficulty: "Medium" as Task["difficulty"],
@@ -127,6 +130,7 @@ export default function GroupCard({
   const reset = () =>
     setForm({
       name: "",
+      description: "",
       dueDate: "",
       status: "Not Started",
       difficulty: "Medium",
@@ -137,6 +141,7 @@ export default function GroupCard({
     const newTask: Task = {
       id: `${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       name: form.name,
+      description: form.description || undefined,
       dueDate: form.dueDate,
       status: form.status,
       difficulty: form.difficulty,
@@ -242,179 +247,209 @@ export default function GroupCard({
         <CollapsibleContent>
           <div>
             {group.tasks.length === 0 ? (
-              <div className="px-5 py-5 flex flex-col items-center justify-center">
+              <div className="px-5 py-8 flex flex-col items-center justify-center gap-1">
                 <p className="text-sm text-muted-foreground">No tasks yet</p>
-
-                <p className="text-xs text-muted-foreground/70 mt-1">
+                <p className="text-xs text-muted-foreground/60">
                   Add a task to get started
                 </p>
               </div>
             ) : (
-              group.tasks.map((t) => (
-                <div
-                  key={t.id}
-                  className={`px-5 py-3 flex items-center gap-4 transition-all duration-200 hover:bg-muted/10 `}
-                >
-                  <Checkbox
-                    aria-label="Mark complete"
-                    checked={checked[t.id] || t.status === "Completed"}
-                    onCheckedChange={() => checkedTasks(t.id)}
-                    className={`w-5 h-5 rounded-lg border-2 shrink-0 flex items-center justify-center transition-all duration-200 ${
-                      checked[t.id] || t.status === "Completed"
-                        ? "bg-success border-success scale-110"
-                        : "border-border hover:border-primary"
-                    }`}
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4">
+                {group.tasks.map((t) => {
+                  const isDone = checked[t.id] || t.status === "Completed";
+                  return (
+                    <div
+                      key={t.id}
+                      className={`rounded-xl  bg-background/50 shadow-sm p-3 flex flex-col gap-2 transition-all duration-200 hover:shadow-md ${
+                        isDone
+                          ? "border-success/30 opacity-70"
+                          : "border-border/50 hover:border-border"
+                      }`}
+                    >
+                      {/* Top row: checkbox + name + delete */}
+                      <div className="flex items-start gap-2">
+                        <Checkbox
+                          aria-label="Mark complete"
+                          checked={isDone}
+                          onCheckedChange={() => checkedTasks(t.id)}
+                          className={`mt-0.5 w-5 h-5 rounded-lg border-2 shrink-0 flex items-center justify-center transition-all duration-200 ${
+                            isDone
+                              ? "bg-success border-success scale-110"
+                              : "border-border hover:border-primary"
+                          }`}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <span
+                            className={`font-medium text-sm leading-snug transition-all block ${
+                              isDone ? "line-through text-muted-foreground" : ""
+                            }`}
+                          >
+                            {t.name}
+                          </span>
+                          {t.description && (
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                              {t.description}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-muted-foreground hover:text-error shrink-0 -mt-0.5 -mr-1"
+                          onClick={() =>
+                            setDeleteConfirm({
+                              show: true,
+                              taskId: t.id,
+                              taskName: t.name,
+                            })
+                          }
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`font-medium text-sm truncate transition-all ${
-                          checked[t.id] || t.status === "Completed"
-                            ? "line-through text-muted-foreground"
-                            : ""
-                        }`}
-                      >
-                        {t.name}
-                      </span>
-                      <Select
-                        value={t.status}
-                        onValueChange={(v) =>
-                          handleUpdateTask(t.id, {
-                            status: v as Task["status"],
-                          })
-                        }
-                      >
-                        <SelectTrigger
-                          className={`data-[size=default]:h-6 bg-transparent rounded-lg px-2 py-0.5 text-[11px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-3 ${getStatusPillClass(
-                            t.status,
-                          )}`}
-                          iconColor={getStatusPillClass(t.status)}
+                      {/* Bottom row: status + difficulty + due date */}
+                      <div className="flex flex-wrap items-center gap-1.5 pl-7">
+                        <Select
+                          value={t.status}
+                          onValueChange={(v) =>
+                            handleUpdateTask(t.id, {
+                              status: v as Task["status"],
+                            })
+                          }
                         >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Not Started">
-                            Not Started
-                          </SelectItem>
-                          <SelectItem value="In Progress">
-                            In Progress
-                          </SelectItem>
-                          <SelectItem value="Completed">Completed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Select
-                        value={t.difficulty}
-                        onValueChange={(v) =>
-                          handleUpdateTask(t.id, {
-                            difficulty: v as Task["difficulty"],
-                          })
-                        }
-                      >
-                        <SelectTrigger
-                          className={`data-[size=default]:h-6 bg-transparent rounded-lg px-2 py-0.5 text-[11px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-3 ${getDifficultyPillClass(
-                            t.difficulty,
-                          )}`}
-                          iconColor={getDifficultyPillClass(t.difficulty)}
+                          <SelectTrigger
+                            className={`data-[size=default]:h-6 bg-transparent rounded-lg px-2 py-0.5 text-[11px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-3 border ${getStatusPillClass(
+                              t.status,
+                            )}`}
+                            iconColor={getStatusPillClass(t.status)}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Not Started">
+                              Not Started
+                            </SelectItem>
+                            <SelectItem value="In Progress">
+                              In Progress
+                            </SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select
+                          value={t.difficulty}
+                          onValueChange={(v) =>
+                            handleUpdateTask(t.id, {
+                              difficulty: v as Task["difficulty"],
+                            })
+                          }
                         >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Easy">Easy</SelectItem>
-                          <SelectItem value="Medium">Medium</SelectItem>
-                          <SelectItem value="Hard">Hard</SelectItem>
-                        </SelectContent>
-                      </Select>
+                          <SelectTrigger
+                            className={`data-[size=default]:h-6 rounded-lg px-2 py-0.5 text-[11px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-3 ${getDifficultyPillClass(
+                              t.difficulty,
+                            )}`}
+                            iconColor={getDifficultyPillClass(t.difficulty)}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Easy">Easy</SelectItem>
+                            <SelectItem value="Medium">Medium</SelectItem>
+                            <SelectItem value="Hard">Hard</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {t.dueDate && (
+                          <span className="text-[11px] text-muted-foreground flex items-center gap-1 ml-auto">
+                            <Calendar className="w-3 h-3" />
+                            {formatDate(t.dueDate)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    {t.dueDate && (
-                      <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        Due {formatDate(t.dueDate)}
-                      </p>
-                    )}
-                  </div>
-
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-muted-foreground hover:text-error hov shrink-0"
-                    onClick={() => {
-                      setDeleteConfirm({
-                        show: true,
-                        taskId: t.id,
-                        taskName: t.name,
-                      });
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))
+                  );
+                })}
+              </div>
             )}
 
             {/* Add Task Form */}
             {showAddForm && (
               <div className="px-5 py-4 bg-muted/20 border-t border-border/50 border-dashed">
-                <div className="flex flex-wrap gap-3 items-end">
-                  <Input
-                    placeholder="Task name"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="flex-1 min-w-[180px]"
-                  />
-                  <DatePickerDemo
-                    className="w-44"
-                    value={selectedFormDate}
-                    onChange={(date) => {
-                      if (!date) {
-                        setForm({ ...form, dueDate: "" });
-                        return;
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap gap-3 items-end">
+                    <Input
+                      placeholder="Task name"
+                      value={form.name}
+                      onChange={(e) =>
+                        setForm({ ...form, name: e.target.value })
                       }
-                      const y = date.getFullYear();
-                      const m = String(date.getMonth() + 1).padStart(2, "0");
-                      const d = String(date.getDate()).padStart(2, "0");
-                      setForm({ ...form, dueDate: `${y}-${m}-${d}` });
-                    }}
-                  />
-                  <SimpleSelect
-                    value={form.status}
-                    onChange={(v) => setForm({ ...form, status: v })}
-                    options={[
-                      { value: "Not Started", label: "Not Started" },
-                      { value: "In Progress", label: "In Progress" },
-                      { value: "Completed", label: "Completed" },
-                    ]}
-                    placeholder="Status"
-                    className="min-w-[130px]"
-                  />
-                  <SimpleSelect
-                    value={form.difficulty}
-                    onChange={(v) =>
-                      setForm({ ...form, difficulty: v as Task["difficulty"] })
-                    }
-                    options={[
-                      { value: "Easy", label: "Easy" },
-                      { value: "Medium", label: "Medium" },
-                      { value: "Hard", label: "Hard" },
-                    ]}
-                    placeholder="Difficulty"
-                    className="min-w-[110px]"
-                  />
-                  <div className="flex gap-2 ml-auto">
-                    <Button onClick={handleAdd} className="gap-2">
-                      <Plus className="w-4 h-4" />
-                      Add Task
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        reset();
-                        setShowAddForm(false);
+                      className="flex-1 min-w-[180px]"
+                    />
+                    <DatePickerDemo
+                      className="w-44"
+                      value={selectedFormDate}
+                      onChange={(date) => {
+                        if (!date) {
+                          setForm({ ...form, dueDate: "" });
+                          return;
+                        }
+                        const y = date.getFullYear();
+                        const m = String(date.getMonth() + 1).padStart(2, "0");
+                        const d = String(date.getDate()).padStart(2, "0");
+                        setForm({ ...form, dueDate: `${y}-${m}-${d}` });
                       }}
-                    >
-                      Cancel
-                    </Button>
+                    />
+                    <SimpleSelect
+                      value={form.status}
+                      onChange={(v) => setForm({ ...form, status: v })}
+                      options={[
+                        { value: "Not Started", label: "Not Started" },
+                        { value: "In Progress", label: "In Progress" },
+                        { value: "Completed", label: "Completed" },
+                      ]}
+                      placeholder="Status"
+                      className="min-w-[130px]"
+                    />
+                    <SimpleSelect
+                      value={form.difficulty}
+                      onChange={(v) =>
+                        setForm({
+                          ...form,
+                          difficulty: v as Task["difficulty"],
+                        })
+                      }
+                      options={[
+                        { value: "Easy", label: "Easy" },
+                        { value: "Medium", label: "Medium" },
+                        { value: "Hard", label: "Hard" },
+                      ]}
+                      placeholder="Difficulty"
+                      className="min-w-[110px]"
+                    />
+                    <div className="flex gap-2 ml-auto">
+                      <Button onClick={handleAdd} className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Add Task
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          reset();
+                          setShowAddForm(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
+                  <Textarea
+                    placeholder="Description (optional)"
+                    value={form.description}
+                    onChange={(e) =>
+                      setForm({ ...form, description: e.target.value })
+                    }
+                    rows={2}
+                    className="resize-none text-sm"
+                  />
                 </div>
               </div>
             )}
@@ -427,7 +462,7 @@ export default function GroupCard({
                   setOpen(true);
                   setShowAddForm(true);
                 }}
-                className="w-full px-5 py-3 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground rounded-b-2xl border-2 border-dashed border-background/20 hover:text-foreground bg-muted/30 hover:bg-background/30 transition-all duration-200"
+                className="w-full px-5 py-3 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground rounded-b-2xl border-t-2 border-dashed border-background/20 hover:text-foreground bg-muted/30 hover:bg-background/30 transition-all duration-200"
               >
                 <Plus className="w-4 h-4" />
                 Add new task
