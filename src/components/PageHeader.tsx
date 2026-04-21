@@ -8,10 +8,10 @@ const PageHeader = ({
   children?: React.ReactNode;
 }) => {
   return (
-    <div className="mb-4 flex items-center justify-between">
+    <div className="mb-3 flex items-center justify-between">
       <div>
-        <h1 className="text-2xl font-bold">{title}</h1>
-        <p className="text-muted-foreground text-sm">{description}</p>
+        <h1 className="text-xl font-bold">{title}</h1>
+        <p className="text-muted-foreground text-xs">{description}</p>
       </div>
       <div>{children}</div>
     </div>

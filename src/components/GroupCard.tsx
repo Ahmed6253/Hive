@@ -17,7 +17,15 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePickerDemo } from "@/components/ui/DatePickerDemo";
-import { ChevronDown, Plus, Trash2, Calendar, Minus } from "lucide-react";
+import {
+  ChevronDown,
+  Plus,
+  Trash2,
+  Calendar,
+  Minus,
+  CheckIcon,
+  X,
+} from "lucide-react";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { useEffect, useState } from "react";
 
@@ -186,39 +194,37 @@ export default function GroupCard({
   return (
     <div className="bg-card rounded-2xl shadow-md overflow-hidden">
       <Collapsible open={open} onOpenChange={setOpen}>
-        {/* Group Header */}
-        <CollapsibleTrigger className="w-full px-5 py-4 flex items-center justify-between gap-3 bg-muted/30 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center shrink-0 text-lg">
+        <CollapsibleTrigger className="w-full px-3 py-2 flex items-center justify-between gap-2 bg-muted/30 transition-colors">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center shrink-0 text-base">
               {Icons[group.iconKey]}
             </div>
             <div className="text-left">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-base md:max-w-full max-w-[40%] truncate">
+                <span className="font-medium text-sm md:max-w-full max-w-[40%] truncate">
                   {group.name}
                 </span>
-                <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                  {group.tasks.length}{" "}
-                  {group.tasks.length === 1 ? "task" : "tasks"}
+                <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                  {group.tasks.length}
                 </span>
               </div>
               {group.description && (
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
                   {group.description}
                 </p>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {group.tasks.length > 0 && (
-              <div className="flex items-center gap-2">
-                <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div className="flex items-center gap-1.5">
+                <div className="w-14 h-1 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
-                <span className="text-xs font-medium w-7 overflow-hidden text-muted-foreground">
+                <span className="text-[10px] font-medium text-muted-foreground">
                   {progressPercent}%
                 </span>
               </div>
@@ -226,76 +232,70 @@ export default function GroupCard({
             {onDeleteGroup && (
               <Button
                 variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-error h-8 w-8"
+                size="icon-xs"
+                className="text-muted-foreground/60 hover:text-error"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeleteGroup(group.id);
                 }}
               >
-                <Minus className="w-4 h-4" />
+                <Minus className="w-3 h-3" />
               </Button>
             )}
             <ChevronDown
-              className="w-4 h-4 opacity-40 transition-transform duration-300"
+              className="w-3 h-3 opacity-40 transition-transform duration-300"
               style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
             />
           </div>
         </CollapsibleTrigger>
-
-        {/* Task List */}
         <CollapsibleContent>
           <div>
             {group.tasks.length === 0 ? (
-              <div className="px-5 py-8 flex flex-col items-center justify-center gap-1">
-                <p className="text-sm text-muted-foreground">No tasks yet</p>
-                <p className="text-xs text-muted-foreground/60">
-                  Add a task to get started
-                </p>
+              <div className="px-3 py-4 flex flex-col items-center justify-center gap-0.5">
+                <p className="text-xs text-muted-foreground">No tasks</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-3">
                 {group.tasks.map((t) => {
                   const isDone = checked[t.id] || t.status === "Completed";
                   return (
                     <div
                       key={t.id}
-                      className={`rounded-xl  bg-background/50 shadow-sm p-3 flex flex-col gap-2 transition-all duration-200 hover:shadow-md ${
+                      className={`rounded-lg bg-background/50 shadow-sm p-3 flex flex-col gap-1.5 transition-all duration-200 hover:shadow-sm ${
                         isDone
                           ? "border-success/30 opacity-70"
                           : "border-border/50 hover:border-border"
                       }`}
                     >
-                      {/* Top row: checkbox + name + delete */}
-                      <div className="flex items-start gap-2">
+                      <div className="flex items-start gap-1.5">
                         <Checkbox
                           aria-label="Mark complete"
                           checked={isDone}
                           onCheckedChange={() => checkedTasks(t.id)}
-                          className={`mt-0.5 w-5 h-5 rounded-lg border-2 shrink-0 flex items-center justify-center transition-all duration-200 ${
+                          className={`mt-0.5 w-4  h-4 rounded-md border-1 shrink-0 flex items-center justify-center transition-all duration-200 ${
                             isDone
-                              ? "bg-success border-success scale-110"
+                              ? "bg-success border-success"
                               : "border-border hover:border-primary"
                           }`}
                         />
                         <div className="flex-1 min-w-0">
                           <span
-                            className={`font-medium text-sm leading-snug transition-all block ${
+                            className={`font-normal text-xs leading-snug transition-all block ${
                               isDone ? "line-through text-muted-foreground" : ""
                             }`}
                           >
                             {t.name}
                           </span>
                           {t.description && (
-                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                            <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
                               {t.description}
                             </p>
                           )}
                         </div>
                         <Button
                           variant="ghost"
-                          size="icon-sm"
-                          className="text-muted-foreground hover:text-error shrink-0 -mt-0.5 -mr-1"
+                          size="icon-xs"
+                          className="text-muted-foreground/60 hover:text-error shrink-0 -mt-0.5 -mr-1"
                           onClick={() =>
                             setDeleteConfirm({
                               show: true,
@@ -304,12 +304,10 @@ export default function GroupCard({
                             })
                           }
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3 h-3" />
                         </Button>
                       </div>
-
-                      {/* Bottom row: status + difficulty + due date */}
-                      <div className="flex flex-wrap items-center gap-1.5 pl-7">
+                      <div className="flex flex-wrap items-center gap-1 mt-auto">
                         <Select
                           value={t.status}
                           onValueChange={(v) =>
@@ -319,7 +317,7 @@ export default function GroupCard({
                           }
                         >
                           <SelectTrigger
-                            className={`data-[size=default]:h-6 bg-transparent rounded-lg px-2 py-0.5 text-[11px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-3 border ${getStatusPillClass(
+                            className={`data-[size=default]:h-5 bg-transparent rounded-md px-1.5 py-0.5 text-[10px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-2 border ${getStatusPillClass(
                               t.status,
                             )}`}
                             iconColor={getStatusPillClass(t.status)}
@@ -345,7 +343,7 @@ export default function GroupCard({
                           }
                         >
                           <SelectTrigger
-                            className={`data-[size=default]:h-6 rounded-lg px-2 py-0.5 text-[11px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-3 ${getDifficultyPillClass(
+                            className={`data-[size=default]:h-5 rounded-md px-1.5 py-0.5 text-[10px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-2 ${getDifficultyPillClass(
                               t.difficulty,
                             )}`}
                             iconColor={getDifficultyPillClass(t.difficulty)}
@@ -359,8 +357,8 @@ export default function GroupCard({
                           </SelectContent>
                         </Select>
                         {t.dueDate && (
-                          <span className="text-[11px] text-muted-foreground flex items-center gap-1 ml-auto">
-                            <Calendar className="w-3 h-3" />
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto">
+                            <Calendar className="w-2.5 h-2.5" />
                             {formatDate(t.dueDate)}
                           </span>
                         )}
@@ -374,18 +372,18 @@ export default function GroupCard({
             {/* Add Task Form */}
             {showAddForm && (
               <div className="px-5 py-4 bg-muted/20 border-t border-border/50 border-dashed">
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-wrap gap-3 items-end">
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap gap-2 items-end">
                     <Input
                       placeholder="Task name"
                       value={form.name}
                       onChange={(e) =>
                         setForm({ ...form, name: e.target.value })
                       }
-                      className="flex-1 min-w-[180px]"
+                      className="flex-1 h-8 min-w-[180px]"
                     />
                     <DatePickerDemo
-                      className="w-44"
+                      className="w-44 h-8"
                       value={selectedFormDate}
                       onChange={(date) => {
                         if (!date) {
@@ -399,6 +397,7 @@ export default function GroupCard({
                       }}
                     />
                     <SimpleSelect
+                      size="sm"
                       value={form.status}
                       onChange={(v) => setForm({ ...form, status: v })}
                       options={[
@@ -407,9 +406,10 @@ export default function GroupCard({
                         { value: "Completed", label: "Completed" },
                       ]}
                       placeholder="Status"
-                      className="min-w-[130px]"
+                      className="min-w-[130px] h-8"
                     />
                     <SimpleSelect
+                      size="sm"
                       value={form.difficulty}
                       onChange={(v) =>
                         setForm({
@@ -426,18 +426,22 @@ export default function GroupCard({
                       className="min-w-[110px]"
                     />
                     <div className="flex gap-2 ml-auto">
-                      <Button onClick={handleAdd} className="gap-2">
-                        <Plus className="w-4 h-4" />
-                        Add Task
+                      <Button
+                        size={"icon-sm"}
+                        onClick={handleAdd}
+                        className="gap-2"
+                      >
+                        <CheckIcon className="w-4 h-4" />
                       </Button>
                       <Button
+                        size={"icon-sm"}
                         variant="outline"
                         onClick={() => {
                           reset();
                           setShowAddForm(false);
                         }}
                       >
-                        Cancel
+                        <X />
                       </Button>
                     </div>
                   </div>
@@ -453,8 +457,6 @@ export default function GroupCard({
                 </div>
               </div>
             )}
-
-            {/* Add Task Button */}
             {!showAddForm && (
               <button
                 type="button"
@@ -462,10 +464,10 @@ export default function GroupCard({
                   setOpen(true);
                   setShowAddForm(true);
                 }}
-                className="w-full px-5 py-3 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground rounded-b-2xl border-t-2 border-dashed border-background/20 hover:text-foreground bg-muted/30 hover:bg-background/30 transition-all duration-200"
+                className="w-full px-3 py-2 flex items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground rounded-b-lg border-t border-dashed border-border/30 hover:text-foreground bg-muted/20 hover:bg-muted/30 transition-all duration-200"
               >
-                <Plus className="w-4 h-4" />
-                Add new task
+                <Plus className="w-3 h-3" />
+                Add task
               </button>
             )}
           </div>
