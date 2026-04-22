@@ -137,7 +137,6 @@ export default function Tasks() {
                   groupName: group?.name,
                 });
               }}
-              tasks={g.tasks}
             />
           ))
         )}
