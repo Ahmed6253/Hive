@@ -13,6 +13,7 @@ import Loader from "./components/loader";
 
 function App() {
   const saveUser = useAuthStore((state: AuthState) => state.saveUser);
+  const removeUser = useAuthStore((state: AuthState) => state.removeUser);
   const user = useAuthStore((state: AuthState) => state.user);
 
   const checkAuth = async () => {
@@ -24,7 +25,7 @@ function App() {
     if (response.data.user) {
       saveUser(response.data.user);
     } else {
-      saveUser(null);
+      removeUser();
     }
     return response.data;
   };
