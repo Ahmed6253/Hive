@@ -30,8 +30,8 @@ function formatDate(raw?: string) {
 }
 
 function getStatusPillClass(status: string) {
-  if (status === "Completed") return "border-success/60 text-success";
-  if (status === "In Progress") return "border-alert/60 text-alert";
+  if (status === "completed") return "border-success/60 text-success";
+  if (status === "in-progress") return "border-alert/60 text-alert";
   return "border-secondary/40 text-secondary";
 }
 
@@ -68,7 +68,7 @@ export default function TaskCard({
           : "border-border/50 hover:border-border"
       }`}
     >
-      <div className="flex items-start gap-1.5">
+      <div className="flex items-center gap-1.5">
         <Checkbox
           aria-label="Mark complete"
           checked={isDone}
@@ -87,11 +87,6 @@ export default function TaskCard({
           >
             {task.name}
           </span>
-          {task.description && (
-            <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
-              {task.description}
-            </p>
-          )}
         </div>
         <Button
           variant="ghost"
@@ -102,6 +97,11 @@ export default function TaskCard({
           <Trash2 className="w-3 h-3" />
         </Button>
       </div>
+      {task.description && (
+        <p className="text-[10px] text-muted-foreground  line-clamp-2">
+          {task.description}
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-1 mt-auto">
         <Select value={task.status} onValueChange={onUpdateStatus}>
           <SelectTrigger
@@ -113,9 +113,9 @@ export default function TaskCard({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Not Started">Not Started</SelectItem>
-            <SelectItem value="In Progress">In Progress</SelectItem>
-            <SelectItem value="Completed">Completed</SelectItem>
+            <SelectItem value="not-started">Not Started</SelectItem>
+            <SelectItem value="in-progress">In Progress</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
           </SelectContent>
         </Select>
         <Select value={task.difficulty} onValueChange={onUpdateDifficulty}>
@@ -128,9 +128,9 @@ export default function TaskCard({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Easy">Easy</SelectItem>
-            <SelectItem value="Medium">Medium</SelectItem>
-            <SelectItem value="Hard">Hard</SelectItem>
+            <SelectItem value={1}>Easy</SelectItem>
+            <SelectItem value={2}>Medium</SelectItem>
+            <SelectItem value={3}>Hard</SelectItem>
           </SelectContent>
         </Select>
         {task.dueDate && (

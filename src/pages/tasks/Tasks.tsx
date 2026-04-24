@@ -1,11 +1,16 @@
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import GroupCard, { Group } from "@/components/GroupCard";
 import CreateGroupModal from "@/components/CreateGroupModal";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Icons } from "@/components/ui/icons";
 import { Plus, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { axiosInstance } from "@/lib/axios";
+
+import toast from "react-hot-toast";
 
 type Task = {
   id: string;
@@ -17,21 +22,25 @@ type Task = {
 };
 
 export default function Tasks() {
-  const [groups, setGroups] = useState<Group[]>(() => {
-    try {
-      const raw = localStorage.getItem("hive_groups");
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [groups, setGroups] = useState<Group[]>([]);
   const [allCollapsed, setAllCollapsed] = useState(false);
 
-  useEffect(() => {
+  const getTasks = async (): Promise<void> => {
     try {
-      localStorage.setItem("hive_groups", JSON.stringify(groups));
-    } catch {}
-  }, [groups]);
+      const response = await axiosInstance.get("/tasks/get");
+      setGroups(response.data.tasks);
+      return response.data;
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to fetch tasks");
+      return;
+    }
+  };
+
+  const { isLoading } = useQuery({
+    queryKey: ["getTasks"],
+    queryFn: getTasks,
+    retry: true,
+  });
 
   const addGroup = (g: Omit<Group, "id" | "tasks">) => {
     setGroups((p) => [{ id: `${Date.now()}`, tasks: [], ...g }, ...p]);
@@ -92,18 +101,20 @@ export default function Tasks() {
         description="Groups organize related tasks. Create groups and add tasks."
       >
         <div className="flex items-center justify-end gap-2 mb-4">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setAllCollapsed(!allCollapsed)}
-            title={allCollapsed ? "Expand all" : "Collapse all"}
-          >
-            {allCollapsed ? (
-              <ChevronsUpDown className="w-4 h-4 transition-transform duration-200" />
-            ) : (
-              <ChevronsDownUp className="w-4 h-4 transition-transform duration-200" />
-            )}
-          </Button>
+          {groups.length > 0 && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setAllCollapsed(!allCollapsed)}
+              title={allCollapsed ? "Expand all" : "Collapse all"}
+            >
+              {allCollapsed ? (
+                <ChevronsUpDown className="w-4 h-4 transition-transform duration-200" />
+              ) : (
+                <ChevronsDownUp className="w-4 h-4 transition-transform duration-200" />
+              )}
+            </Button>
+          )}
           <Button
             size="icon"
             onClick={() => setShowCreate(true)}
@@ -114,8 +125,29 @@ export default function Tasks() {
         </div>
       </PageHeader>
 
-      <div className="grid gap-4">
-        {groups.length === 0 ? (
+      <div className="space-y-4">
+        {isLoading ? (
+          <>
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-card rounded-2xl shadow-md overflow-hidden opacity-50 "
+              >
+                <div className="px-3 py-2 flex items-center justify-between gap-2 bg-muted/30">
+                  <Skeleton className="h-6 w-24" />
+                </div>
+                <div className="p-3 space-y-2">
+                  {[1, 2].map((j) => (
+                    <div key={j} className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-4 rounded-sm" />
+                      <Skeleton className="h-4 flex-1" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </>
+        ) : groups.length === 0 && !isLoading ? (
           <div className="text-muted-foreground">
             No groups yet. Create one to get started.
           </div>
@@ -150,7 +182,7 @@ export default function Tasks() {
           addGroup({
             name: g.name,
             description: g.description,
-            iconKey: g.iconKey as keyof typeof Icons,
+            icon: g.iconKey as keyof typeof Icons,
           });
           setShowCreate(false);
         }}

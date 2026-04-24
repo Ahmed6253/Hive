@@ -4,7 +4,7 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
+
 import { Icons } from "@/components/ui/icons";
 import { ChevronDown, Plus, Minus } from "lucide-react";
 import ConfirmationDialog from "./ConfirmationDialog";
@@ -24,10 +24,11 @@ export type Group = {
   id: string;
   name: string;
   description?: string;
-  iconKey: keyof typeof Icons;
+  icon: keyof typeof Icons;
   tasks: Task[];
   onDeleteTask?: (groupId: string, taskId: string) => void;
   onDeleteGroup?: (groupId: string) => void;
+  decription?: string;
 };
 
 export default function GroupCard({
@@ -50,6 +51,8 @@ export default function GroupCard({
   const [open, setOpen] = useState(defaultOpen);
 
   useEffect(() => {
+    console.log(group);
+
     if (forceOpen !== undefined) {
       setOpen(forceOpen);
     }
@@ -101,10 +104,10 @@ export default function GroupCard({
         delete copy[taskId];
         return copy;
       });
-      onUpdateTask(group.id, taskId, { status: "Not Started" });
+      onUpdateTask(group.id, taskId, { status: "not-started" });
     } else {
       setChecked((p) => ({ ...p, [taskId]: true }));
-      onUpdateTask(group.id, taskId, { status: "Completed" });
+      onUpdateTask(group.id, taskId, { status: "completed" });
     }
   };
 
@@ -119,7 +122,7 @@ export default function GroupCard({
         <CollapsibleTrigger className="w-full px-3 py-2 flex items-center justify-between gap-2 bg-muted/30 transition-colors">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center shrink-0 text-base">
-              {Icons[group.iconKey]}
+              {Icons[group.icon]}
             </div>
             <div className="text-left">
               <div className="flex items-center gap-2">
@@ -152,9 +155,7 @@ export default function GroupCard({
               </div>
             )}
             {onDeleteGroup && (
-              <Button
-                variant="ghost"
-                size="icon-xs"
+              <span
                 className="text-muted-foreground/60 hover:text-error"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -162,7 +163,7 @@ export default function GroupCard({
                 }}
               >
                 <Minus className="w-3 h-3" />
-              </Button>
+              </span>
             )}
             <ChevronDown
               className="w-3 h-3 opacity-40 transition-transform duration-300"

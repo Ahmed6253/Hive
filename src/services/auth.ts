@@ -19,7 +19,8 @@ export async function registerUser(data: {
 export async function loginUser(data: { email: string; password: string }) {
   try {
     const response = await axiosInstance.post("/auth/login", data);
-    return response.data;
+
+    return response.data.user;
   } catch (error: any) {
     console.log("Error during login:", error);
     toast.error(error.response?.data?.message || "Login failed");

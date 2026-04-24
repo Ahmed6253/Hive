@@ -27,13 +27,14 @@ function App() {
     } else {
       removeUser();
     }
-    return response.data;
+    return response.data.user;
   };
 
   const { isLoading } = useQuery({
     queryKey: ["checkAuth"],
     queryFn: checkAuth,
     retry: false,
+    refetchOnWindowFocus: false,
   });
   return (
     <>
