@@ -10,15 +10,7 @@ import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
-
-type Task = {
-  id: string;
-  name: string;
-  description?: string;
-  dueDate?: string;
-  status: string;
-  difficulty: 1 | 2 | 3;
-};
+import { Task } from "@/types/tasks";
 
 export default function Tasks() {
   const [groups, setGroups] = useState<Group[]>([]);

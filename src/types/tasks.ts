@@ -6,15 +6,18 @@ export type Task = {
   description?: string;
   dueDate?: string;
   status: string;
-  difficulty: "Easy" | "Medium" | "Hard";
+  difficulty: 1 | 2 | 3;
 };
 
 export type Group = {
   id: string;
   name: string;
   description?: string;
-  iconKey: keyof typeof Icons;
+  icon: keyof typeof Icons;
   tasks: Task[];
+  onDeleteTask?: (groupId: string, taskId: string) => void;
+  onDeleteGroup?: (groupId: string) => void;
+  decription?: string;
 };
 
 export type ApiTask = {

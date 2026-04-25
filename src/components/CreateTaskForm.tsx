@@ -5,15 +5,7 @@ import { Button } from "@/components/ui/button";
 import SimpleSelect from "@/components/Select";
 import { DatePickerDemo } from "@/components/ui/DatePickerDemo";
 import { CheckIcon, X } from "lucide-react";
-
-type Task = {
-  id: string;
-  name: string;
-  description?: string;
-  dueDate?: string;
-  status: string;
-  difficulty: 1 | 2 | 3;
-};
+import { Task } from "@/types/tasks";
 
 export default function CreateTaskForm({
   onAddTask,

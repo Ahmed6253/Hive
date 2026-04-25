@@ -10,26 +10,9 @@ import { ChevronDown, Plus, Minus } from "lucide-react";
 import ConfirmationDialog from "./ConfirmationDialog";
 import TaskCard from "./TaskCard";
 import CreateTaskForm from "./CreateTaskForm";
+import { Task, Group } from "@/types/tasks";
 
-type Task = {
-  id: string;
-  name: string;
-  description?: string;
-  dueDate?: string;
-  status: string;
-  difficulty: 1 | 2 | 3;
-};
-
-export type Group = {
-  id: string;
-  name: string;
-  description?: string;
-  icon: keyof typeof Icons;
-  tasks: Task[];
-  onDeleteTask?: (groupId: string, taskId: string) => void;
-  onDeleteGroup?: (groupId: string) => void;
-  decription?: string;
-};
+export type { Group };
 
 export default function GroupCard({
   group,

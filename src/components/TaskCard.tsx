@@ -8,15 +8,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Trash2, Calendar } from "lucide-react";
-
-type Task = {
-  id: string;
-  name: string;
-  description?: string;
-  dueDate?: string;
-  status: string;
-  difficulty: 1 | 2 | 3;
-};
+import { Task } from "@/types/tasks";
 
 function formatDate(raw?: string) {
   if (!raw) return null;
