@@ -7,9 +7,9 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
-type Option = { value: string; label: React.ReactNode };
+type Option = { value: string | number; label: React.ReactNode };
 
-export default function SimpleSelect<T extends string>({
+export default function SimpleSelect<T extends string | number>({
   value,
   onChange,
   options,

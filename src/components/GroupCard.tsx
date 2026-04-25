@@ -17,7 +17,7 @@ type Task = {
   description?: string;
   dueDate?: string;
   status: string;
-  difficulty: "Easy" | "Medium" | "Hard";
+  difficulty: 1 | 2 | 3;
 };
 
 export type Group = {

@@ -12,7 +12,7 @@ type Task = {
   description?: string;
   dueDate?: string;
   status: string;
-  difficulty: "Easy" | "Medium" | "Hard";
+  difficulty: 1 | 2 | 3;
 };
 
 export default function CreateTaskForm({
@@ -26,8 +26,8 @@ export default function CreateTaskForm({
     name: "",
     description: "",
     dueDate: "",
-    status: "Not Started",
-    difficulty: "Medium" as Task["difficulty"],
+    status: "not-started",
+    difficulty: 2 as Task["difficulty"],
   });
 
   const selectedFormDate = form.dueDate
@@ -76,9 +76,9 @@ export default function CreateTaskForm({
             value={form.status}
             onChange={(v) => setForm({ ...form, status: v })}
             options={[
-              { value: "Not Started", label: "Not Started" },
-              { value: "In Progress", label: "In Progress" },
-              { value: "Completed", label: "Completed" },
+              { value: "not-started", label: "Not Started" },
+              { value: "in-progress", label: "In Progress" },
+              { value: "completed", label: "Completed" },
             ]}
             placeholder="Status"
             className="min-w-[130px] h-8"
@@ -90,9 +90,9 @@ export default function CreateTaskForm({
               setForm({ ...form, difficulty: v as Task["difficulty"] })
             }
             options={[
-              { value: "Easy", label: "Easy" },
-              { value: "Medium", label: "Medium" },
-              { value: "Hard", label: "Hard" },
+              { value: 1, label: "Easy" },
+              { value: 2, label: "Medium" },
+              { value: 3, label: "Hard" },
             ]}
             placeholder="Difficulty"
             className="min-w-[110px]"
@@ -101,11 +101,7 @@ export default function CreateTaskForm({
             <Button size={"icon-sm"} onClick={handleAdd} className="gap-2">
               <CheckIcon className="w-4 h-4" />
             </Button>
-            <Button
-              size={"icon-sm"}
-              variant="outline"
-              onClick={onCancel}
-            >
+            <Button size={"icon-sm"} variant="outline" onClick={onCancel}>
               <X />
             </Button>
           </div>

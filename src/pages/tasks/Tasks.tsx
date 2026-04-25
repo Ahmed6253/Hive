@@ -6,11 +6,10 @@ import CreateGroupModal from "@/components/CreateGroupModal";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Icons } from "@/components/ui/icons";
 import { Plus, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
-import { useState } from "react";
+import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
-
-import toast from "react-hot-toast";
 
 type Task = {
   id: string;
@@ -18,29 +17,35 @@ type Task = {
   description?: string;
   dueDate?: string;
   status: string;
-  difficulty: "Easy" | "Medium" | "Hard";
+  difficulty: 1 | 2 | 3;
 };
 
 export default function Tasks() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [allCollapsed, setAllCollapsed] = useState(false);
 
-  const getTasks = async (): Promise<void> => {
+  const getTasks = async () => {
     try {
-      const response = await axiosInstance.get("/tasks/get");
-      setGroups(response.data.tasks);
-      return response.data;
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to fetch tasks");
-      return;
+      const res = await axiosInstance.get("/tasks/get");
+      setGroups(res?.data?.tasks);
+      return res.data;
+    } catch (error) {
+      toast.error("Failed to fetch tasks");
+      throw error;
     }
   };
 
-  const { isLoading } = useQuery({
+  const { isLoading, error } = useQuery({
     queryKey: ["getTasks"],
     queryFn: getTasks,
     retry: true,
   });
+
+  useEffect(() => {
+    if (error) {
+      toast.error("Failed to fetch tasks");
+    }
+  }, [error]);
 
   const addGroup = (g: Omit<Group, "id" | "tasks">) => {
     setGroups((p) => [{ id: `${Date.now()}`, tasks: [], ...g }, ...p]);
