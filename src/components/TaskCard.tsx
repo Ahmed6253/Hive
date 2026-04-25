@@ -15,7 +15,7 @@ type Task = {
   description?: string;
   dueDate?: string;
   status: string;
-  difficulty: "Easy" | "Medium" | "Hard";
+  difficulty: 1 | 2 | 3;
 };
 
 function formatDate(raw?: string) {
@@ -36,10 +36,10 @@ function getStatusPillClass(status: string) {
 }
 
 function getDifficultyPillClass(difficulty: Task["difficulty"]) {
-  if (difficulty === "Easy") {
+  if (difficulty === 1) {
     return "border-transparent bg-success text-white focus-visible:border-success";
   }
-  if (difficulty === "Medium") {
+  if (difficulty === 2) {
     return "border-transparent bg-alert text-white focus-visible:border-alert";
   }
   return "border-transparent bg-error text-white focus-visible:border-error";
