@@ -54,10 +54,8 @@ export default function TaskCard({
 }) {
   return (
     <div
-      className={`rounded-lg bg-background/50 shadow-sm p-3 flex flex-col gap-1.5 transition-all duration-200 hover:shadow-sm ${
-        isDone
-          ? "border-success/30 opacity-70"
-          : "border-border/50 hover:border-border"
+      className={`rounded-lg bg-background/50 shadow-sm p-3 border border-transparent flex flex-col gap-1.5 transition-all duration-200 hover:shadow-sm ${
+        isDone ? "opacity-70" : "border-border/50 hover:border-border/40"
       }`}
     >
       <div className="flex items-center gap-1.5">
@@ -90,7 +88,11 @@ export default function TaskCard({
         </Button>
       </div>
       {task.description && (
-        <p className="text-[10px] text-muted-foreground  line-clamp-2">
+        <p
+          className={`font-normal text-[10px] leading-snug transition-all block ${
+            isDone ? "line-through text-muted-foreground" : ""
+          }`}
+        >
           {task.description}
         </p>
       )}

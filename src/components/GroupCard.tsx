@@ -50,7 +50,7 @@ export default function GroupCard({
   const [checked, setChecked] = useState<Record<string, boolean>>({
     ...group.tasks.reduce(
       (acc, t) => {
-        if (t.status === "Completed") {
+        if (t.status === "completed") {
           acc[t.id] = true;
         }
         return acc;
@@ -60,7 +60,7 @@ export default function GroupCard({
   });
 
   const completedCount = group.tasks.filter(
-    (t) => checked[t.id] || t.status === "Completed",
+    (t) => t.status === "completed",
   ).length;
   const progressPercent =
     group.tasks.length > 0
@@ -166,7 +166,7 @@ export default function GroupCard({
                   <TaskCard
                     key={t.id}
                     task={t}
-                    isDone={checked[t.id] || t.status === "Completed"}
+                    isDone={t.status === "completed"}
                     onToggleComplete={() => toggleComplete(t.id)}
                     onUpdateStatus={(status) =>
                       handleUpdateTask(t.id, { status })

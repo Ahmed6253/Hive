@@ -144,7 +144,7 @@ export default function Tasks() {
               </div>
             ))}
           </>
-        ) : groups.length === 0 && !isLoading ? (
+        ) : groups?.length < 0 && !isLoading ? (
           <div className="text-muted-foreground">
             No groups yet. Create one to get started.
           </div>
