@@ -6,8 +6,8 @@ import {
 } from "@/components/ui/collapsible";
 
 import { Icons } from "@/components/ui/icons";
-import { ChevronDown, Plus, Minus } from "lucide-react";
-import ConfirmationDialog from "./ConfirmationDialog";
+import { ChevronDown, Plus, SquarePen, FolderX } from "lucide-react";
+import ConfirmationDialog from "../../../components/ConfirmationDialog";
 import TaskCard from "./TaskCard";
 import CreateTaskForm from "./CreateTaskForm";
 import { Task, Group } from "@/types/tasks";
@@ -34,8 +34,6 @@ export default function GroupCard({
   const [open, setOpen] = useState(defaultOpen);
 
   useEffect(() => {
-    console.log(group);
-
     if (forceOpen !== undefined) {
       setOpen(forceOpen);
     }
@@ -123,7 +121,7 @@ export default function GroupCard({
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {group.tasks.length > 0 && (
               <div className="flex items-center gap-1.5 justify-between w-24">
                 <div className="w-17 h-1 bg-muted rounded-full overflow-hidden">
@@ -137,6 +135,17 @@ export default function GroupCard({
                 </span>
               </div>
             )}
+            {
+              <span
+                className="text-muted-foreground/60 hover:text-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAddForm(true);
+                }}
+              >
+                <SquarePen className="w-4 h-4" />
+              </span>
+            }
             {onDeleteGroup && (
               <span
                 className="text-muted-foreground/60 hover:text-error"
@@ -145,7 +154,7 @@ export default function GroupCard({
                   onDeleteGroup(group.id);
                 }}
               >
-                <Minus className="w-3 h-3" />
+                <FolderX className="w-4 h-4" />
               </span>
             )}
             <ChevronDown

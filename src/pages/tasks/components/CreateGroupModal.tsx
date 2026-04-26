@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import IconCarousel from "@/components/IconCarousel";
 import { Icons } from "@/components/ui/icons";
-import Label from "./ui/label";
+import Label from "@/components/ui/label";
 import { useState } from "react";
 
 type CreatePayload = {

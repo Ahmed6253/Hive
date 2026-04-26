@@ -1,13 +1,13 @@
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import GroupCard, { Group } from "@/components/GroupCard";
-import CreateGroupModal from "@/components/CreateGroupModal";
+import GroupCard, { Group } from "@/pages/tasks/components/GroupCard";
+import CreateGroupModal from "@/pages/tasks/components/CreateGroupModal";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Icons } from "@/components/ui/icons";
 import { Plus, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import toast from "react-hot-toast";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { Task } from "@/types/tasks";
@@ -27,17 +27,11 @@ export default function Tasks() {
     }
   };
 
-  const { isLoading, error } = useQuery({
+  const { isFetching } = useQuery({
     queryKey: ["getTasks"],
     queryFn: getTasks,
     retry: true,
   });
-
-  useEffect(() => {
-    if (error) {
-      toast.error("Failed to fetch tasks");
-    }
-  }, [error]);
 
   const addGroup = (g: Omit<Group, "id" | "tasks">) => {
     setGroups((p) => [{ id: `${Date.now()}`, tasks: [], ...g }, ...p]);
@@ -123,7 +117,7 @@ export default function Tasks() {
       </PageHeader>
 
       <div className="space-y-4">
-        {isLoading ? (
+        {isFetching ? (
           <>
             {[1, 2, 3].map((i) => (
               <div
@@ -144,7 +138,7 @@ export default function Tasks() {
               </div>
             ))}
           </>
-        ) : groups?.length < 0 && !isLoading ? (
+        ) : groups?.length === 0 && !isFetching ? (
           <div className="text-muted-foreground">
             No groups yet. Create one to get started.
           </div>

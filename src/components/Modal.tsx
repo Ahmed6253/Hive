@@ -36,7 +36,7 @@ export default function Modal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-card mx-2 overflow-hidden from-bottom max-h-[70vh] min-w-[320px]  p-4 rounded-lg space-y-2 overflow-y-auto ${className} ${
+        className={`bg-card mx-2 overflow-hidden from-bottom max-h-[90vh] min-w-[320px]  p-4 rounded-lg space-y-2 overflow-y-auto ${className} ${
           isClose && "back-bottom"
         }`}
       >
