@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Trash2, Calendar } from "lucide-react";
+import { Trash2, Calendar, LoaderCircle } from "lucide-react";
 import { Task } from "@/types/tasks";
 
 function formatDate(raw?: string) {
@@ -45,6 +45,8 @@ export default function TaskCard({
   onUpdateDifficulty,
   onDelete,
   onOpen,
+  isUpdating = false,
+  isDeleting = false,
 }: {
   task: Task;
   isDone: boolean;
@@ -53,7 +55,10 @@ export default function TaskCard({
   onUpdateDifficulty: (difficulty: Task["difficulty"]) => void;
   onDelete: () => void;
   onOpen: () => void;
+  isUpdating?: boolean;
+  isDeleting?: boolean;
 }) {
+  const isBusy = isUpdating || isDeleting;
   return (
     <div
       onClick={onOpen}
@@ -67,6 +72,7 @@ export default function TaskCard({
           checked={isDone}
           onCheckedChange={() => onToggleComplete()}
           onClick={(e) => e.stopPropagation()}
+          disabled={isBusy}
           className={`mt-0.5 w-4 h-4 rounded-md border-1 shrink-0 flex items-center justify-center transition-all duration-200 ${
             isDone
               ? "bg-success border-success"
@@ -86,12 +92,17 @@ export default function TaskCard({
           variant="ghost"
           size="icon-xs"
           className="text-muted-foreground/60 hover:text-error shrink-0 -mt-0.5 -mr-1"
+          disabled={isDeleting}
           onClick={(e) => {
             e.stopPropagation();
             onDelete();
           }}
         >
-          <Trash2 className="w-3 h-3" />
+          {isDeleting ? (
+            <LoaderCircle className="w-3 h-3 animate-spin" />
+          ) : (
+            <Trash2 className="w-3 h-3" />
+          )}
         </Button>
       </div>
       {task.description && (
@@ -104,8 +115,12 @@ export default function TaskCard({
         </p>
       )}
       <div className="flex flex-wrap items-center gap-1 mt-auto">
+        {isUpdating && (
+          <LoaderCircle className="w-3 h-3 animate-spin text-muted-foreground" />
+        )}
         <Select value={task.status} onValueChange={onUpdateStatus}>
           <SelectTrigger
+            disabled={isBusy}
             className={`data-[size=default]:h-5 bg-transparent rounded-md px-1.5 py-0.5 text-[10px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-2 border ${getStatusPillClass(
               task.status,
             )}`}
@@ -121,6 +136,7 @@ export default function TaskCard({
         </Select>
         <Select value={task.difficulty} onValueChange={onUpdateDifficulty}>
           <SelectTrigger
+            disabled={isBusy}
             className={`data-[size=default]:h-5 rounded-md px-1.5 py-0.5 text-[10px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-2 ${getDifficultyPillClass(
               task.difficulty,
             )}`}

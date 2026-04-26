@@ -8,11 +8,12 @@ import { Icons } from "@/components/ui/icons";
 import { Plus, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import toast from "react-hot-toast";
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { Task } from "@/types/tasks";
 
 export default function Tasks() {
+  const queryClient = useQueryClient();
   const [groups, setGroups] = useState<Group[]>([]);
   const [allCollapsed, setAllCollapsed] = useState(false);
   const [showGroupModal, setShowGroupModal] = useState(false);
@@ -20,6 +21,27 @@ export default function Tasks() {
   const [newlyCreatedGroupId, setNewlyCreatedGroupId] = useState<string | null>(
     null,
   );
+  const [removingGroupId, setRemovingGroupId] = useState<string | null>(null);
+  const [deletingGroupId, setDeletingGroupId] = useState<string | null>(null);
+  const [creatingTaskGroupId, setCreatingTaskGroupId] = useState<string | null>(
+    null,
+  );
+  const [newlyCreatedTask, setNewlyCreatedTask] = useState<{
+    groupId: string;
+    taskId: string;
+  } | null>(null);
+  const [deletingTask, setDeletingTask] = useState<{
+    groupId: string;
+    taskId: string;
+  } | null>(null);
+  const [updatingTask, setUpdatingTask] = useState<{
+    groupId: string;
+    taskId: string;
+  } | null>(null);
+  const [removingTask, setRemovingTask] = useState<{
+    groupId: string;
+    taskId: string;
+  } | null>(null);
 
   const firstIconKey = (Object.keys(Icons)[0] ?? "work") as keyof typeof Icons;
   const normalizeIcon = (icon?: string): keyof typeof Icons =>
@@ -91,6 +113,9 @@ export default function Tasks() {
   const deleteGroup = (groupId: string) => {
     setGroups((p) => p.filter((g) => g.id !== groupId));
   };
+
+  const getTaskById = (groupId: string, taskId: string) =>
+    groups.find((g) => g.id === groupId)?.tasks.find((t) => t.id === taskId);
 
   const [deleteConfirm, setDeleteConfirm] = useState<{
     show: boolean;
@@ -167,18 +192,131 @@ export default function Tasks() {
   });
 
   const deleteGroupMutation = useMutation({
+    onMutate: (groupId) => {
+      setDeletingGroupId(groupId);
+    },
     mutationFn: async (groupId: string) =>
       axiosInstance.delete("/groups/delete", {
         data: { id: groupId },
       }),
     onSuccess: (res, groupId) => {
-      deleteGroup(groupId);
       setDeleteConfirm({ show: false });
-
+      setRemovingGroupId(groupId);
       toast.success(res.data.data.message);
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "Failed to delete group");
+    },
+    onSettled: () => {
+      setDeletingGroupId(null);
+    },
+  });
+
+  const createTaskMutation = useMutation({
+    onMutate: ({ groupId }) => {
+      setCreatingTaskGroupId(groupId);
+    },
+    mutationFn: async ({
+      groupId,
+      payload,
+    }: {
+      groupId: string;
+      payload: Omit<Task, "id">;
+    }) =>
+      axiosInstance.post("/tasks/create", {
+        name: payload.name,
+        description: payload.description,
+        dueDate: payload.dueDate,
+        status: payload.status,
+        difficulty: payload.difficulty,
+        groupId,
+      }),
+    onSuccess: (res, variables) => {
+      const createdTask = res?.data?.task;
+      if (!createdTask?._id) {
+        toast.error("Failed to create task");
+        return;
+      }
+      addTaskToGroup(variables.groupId, {
+        id: createdTask._id,
+        name: createdTask.name,
+        description: createdTask.description,
+        dueDate: createdTask.dueDate,
+        status: createdTask.status,
+        difficulty: createdTask.difficulty,
+      });
+      setNewlyCreatedTask({
+        groupId: variables.groupId,
+        taskId: createdTask._id,
+      });
+      toast.success("Task created successfully");
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to create task");
+    },
+    onSettled: () => {
+      setCreatingTaskGroupId(null);
+    },
+  });
+
+  const updateTaskMutation = useMutation({
+    onMutate: ({ groupId, taskId }) => {
+      setUpdatingTask({ groupId, taskId });
+    },
+    mutationFn: async ({
+      groupId,
+      taskId,
+      patch,
+    }: {
+      groupId: string;
+      taskId: string;
+      patch: Partial<Task>;
+    }) => {
+      const current = getTaskById(groupId, taskId);
+      if (!current) throw new Error("Task not found");
+      const nextTask = { ...current, ...patch };
+      return axiosInstance.put("/tasks/edit", {
+        id: taskId,
+        groupId,
+        name: nextTask.name,
+        description: nextTask.description,
+        dueDate: nextTask.dueDate,
+        status: nextTask.status,
+        difficulty: nextTask.difficulty,
+      });
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to update task");
+      queryClient.invalidateQueries({ queryKey: ["getTasks"] });
+    },
+    onSettled: () => {
+      setUpdatingTask(null);
+    },
+  });
+
+  const deleteTaskMutation = useMutation({
+    onMutate: ({ groupId, taskId }) => {
+      setDeletingTask({ groupId, taskId });
+    },
+    mutationFn: async ({
+      groupId,
+      taskId,
+    }: {
+      groupId: string;
+      taskId: string;
+    }) =>
+      axiosInstance.delete("/tasks/delete", {
+        data: { id: taskId, groupId },
+      }),
+    onSuccess: (_, variables) => {
+      setRemovingTask({ groupId: variables.groupId, taskId: variables.taskId });
+      toast.success("Task deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to delete task");
+    },
+    onSettled: () => {
+      setDeletingTask(null);
     },
   });
 
@@ -249,21 +387,68 @@ export default function Tasks() {
               className={
                 g.id === newlyCreatedGroupId
                   ? "animate-in fade-in-0 slide-in-from-top-2 duration-300"
-                  : ""
+                  : g.id === removingGroupId
+                    ? "animate-out fade-out-0 slide-out-to-top-2 duration-200 pointer-events-none"
+                    : ""
               }
               onAnimationEnd={() => {
                 if (g.id === newlyCreatedGroupId) {
                   setNewlyCreatedGroupId(null);
                 }
+                if (g.id === removingGroupId) {
+                  deleteGroup(g.id);
+                  setRemovingGroupId(null);
+                }
               }}
             >
               <GroupCard
                 group={g}
-                onAddTask={addTaskToGroup}
-                onUpdateTask={updateTaskInGroup}
+                onAddTask={(groupId, taskPayload) =>
+                  createTaskMutation.mutate({ groupId, payload: taskPayload })
+                }
+                onUpdateTask={(groupId, taskId, patch) => {
+                  updateTaskInGroup(groupId, taskId, patch);
+                  updateTaskMutation.mutate({ groupId, taskId, patch });
+                }}
                 defaultOpen={!allCollapsed}
                 forceOpen={!allCollapsed}
-                onDeleteTask={deleteTaskInGroup}
+                onDeleteTask={(groupId, taskId) =>
+                  deleteTaskMutation.mutate({ groupId, taskId })
+                }
+                isAddingTask={creatingTaskGroupId === g.id}
+                deletingTaskId={
+                  deletingTask?.groupId === g.id ? deletingTask.taskId : null
+                }
+                updatingTaskId={
+                  updatingTask?.groupId === g.id ? updatingTask.taskId : null
+                }
+                removingTaskId={
+                  removingTask?.groupId === g.id ? removingTask.taskId : null
+                }
+                newlyCreatedTaskId={
+                  newlyCreatedTask?.groupId === g.id
+                    ? newlyCreatedTask.taskId
+                    : null
+                }
+                onTaskEntryAnimationEnd={(taskId) => {
+                  if (
+                    newlyCreatedTask &&
+                    newlyCreatedTask.groupId === g.id &&
+                    newlyCreatedTask.taskId === taskId
+                  ) {
+                    setNewlyCreatedTask(null);
+                  }
+                }}
+                onTaskRemoveAnimationEnd={(taskId) => {
+                  if (
+                    removingTask &&
+                    removingTask.groupId === g.id &&
+                    removingTask.taskId === taskId
+                  ) {
+                    deleteTaskInGroup(g.id, taskId);
+                    setRemovingTask(null);
+                  }
+                }}
                 onDeleteGroup={(groupId) => {
                   const group = groups.find((g) => g.id === groupId);
                   setDeleteConfirm({
@@ -276,6 +461,7 @@ export default function Tasks() {
                   setEditingGroup(group);
                   setShowGroupModal(true);
                 }}
+                isDeletingGroup={deletingGroupId === g.id}
               />
             </div>
           ))

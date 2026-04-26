@@ -33,11 +33,35 @@ export default function TaskDetailsModal({
     setEditingDescription(false);
   }, [task, show]);
 
-  const updatePatch = (patch: Partial<Task>) => {
-    if (!localTask) return;
-    const nextTask = { ...localTask, ...patch };
-    setLocalTask(nextTask);
-    onUpdateTask(localTask.id, patch);
+  const closeWithSave = () => {
+    if (!localTask || !task) {
+      toggleShow();
+      return;
+    }
+
+    const nextName = localTask.name.trim() || task.name;
+    const nextDescription = localTask.description || undefined;
+    const patch: Partial<Task> = {};
+
+    if (nextName !== task.name) patch.name = nextName;
+    if (nextDescription !== (task.description || undefined)) {
+      patch.description = nextDescription;
+    }
+    if (localTask.status !== task.status) patch.status = localTask.status;
+    if (localTask.difficulty !== task.difficulty) {
+      patch.difficulty = localTask.difficulty;
+    }
+    if ((localTask.dueDate || undefined) !== (task.dueDate || undefined)) {
+      patch.dueDate = localTask.dueDate || undefined;
+    }
+
+    if (Object.keys(patch).length > 0) {
+      onUpdateTask(localTask.id, patch);
+    }
+
+    setEditingName(false);
+    setEditingDescription(false);
+    toggleShow();
   };
 
   if (!localTask) return null;
@@ -52,7 +76,7 @@ export default function TaskDetailsModal({
     <Modal
       className="w-[680px]"
       show={show}
-      toggleShow={toggleShow}
+      toggleShow={closeWithSave}
       title="Task details"
     >
       <div className="space-y-4">
@@ -69,9 +93,11 @@ export default function TaskDetailsModal({
               }
               onBlur={() => {
                 const next = localTask.name.trim();
-                if (next && next !== task?.name) {
-                  updatePatch({ name: next });
-                } else if (task?.name && next !== task.name) {
+                if (next) {
+                  setLocalTask((prev) =>
+                    prev ? { ...prev, name: next } : prev,
+                  );
+                } else if (task?.name) {
                   setLocalTask((prev) =>
                     prev ? { ...prev, name: task.name } : prev,
                   );
@@ -109,10 +135,6 @@ export default function TaskDetailsModal({
                 )
               }
               onBlur={() => {
-                const next = localTask.description ?? "";
-                if ((task?.description ?? "") !== next) {
-                  updatePatch({ description: next || undefined });
-                }
                 setEditingDescription(false);
               }}
             />
@@ -135,7 +157,9 @@ export default function TaskDetailsModal({
             <Select
               value={localTask.status}
               onValueChange={(status) =>
-                updatePatch({ status: status as Task["status"] })
+                setLocalTask((prev) =>
+                  prev ? { ...prev, status: status as Task["status"] } : prev,
+                )
               }
             >
               <SelectTrigger className="w-full">
@@ -154,7 +178,11 @@ export default function TaskDetailsModal({
             <Select
               value={localTask.difficulty}
               onValueChange={(difficulty) =>
-                updatePatch({ difficulty: difficulty as Task["difficulty"] })
+                setLocalTask((prev) =>
+                  prev
+                    ? { ...prev, difficulty: difficulty as Task["difficulty"] }
+                    : prev,
+                )
               }
             >
               <SelectTrigger className="w-full">
@@ -175,13 +203,17 @@ export default function TaskDetailsModal({
               value={selectedDate}
               onChange={(date) => {
                 if (!date) {
-                  updatePatch({ dueDate: undefined });
+                  setLocalTask((prev) =>
+                    prev ? { ...prev, dueDate: undefined } : prev,
+                  );
                   return;
                 }
                 const y = date.getFullYear();
                 const m = String(date.getMonth() + 1).padStart(2, "0");
                 const d = String(date.getDate()).padStart(2, "0");
-                updatePatch({ dueDate: `${y}-${m}-${d}` });
+                setLocalTask((prev) =>
+                  prev ? { ...prev, dueDate: `${y}-${m}-${d}` } : prev,
+                );
               }}
             />
           </div>

@@ -6,7 +6,13 @@ import {
 } from "@/components/ui/collapsible";
 
 import { Icons } from "@/components/ui/icons";
-import { ChevronDown, Plus, SquarePen, FolderX } from "lucide-react";
+import {
+  ChevronDown,
+  Plus,
+  SquarePen,
+  FolderX,
+  LoaderCircle,
+} from "lucide-react";
 import ConfirmationDialog from "../../../components/ConfirmationDialog";
 import TaskCard from "./TaskCard";
 import CreateTaskForm from "./CreateTaskForm";
@@ -24,13 +30,29 @@ export default function GroupCard({
   onDeleteTask,
   onDeleteGroup,
   onEditGroup,
+  isAddingTask = false,
+  deletingTaskId = null,
+  updatingTaskId = null,
+  removingTaskId = null,
+  newlyCreatedTaskId = null,
+  onTaskEntryAnimationEnd,
+  onTaskRemoveAnimationEnd,
+  isDeletingGroup = false,
 }: {
   group: Group;
-  onAddTask: (groupId: string, task: Task) => void;
+  onAddTask: (groupId: string, task: Omit<Task, "id">) => void;
   onUpdateTask: (groupId: string, taskId: string, patch: Partial<Task>) => void;
   onDeleteTask?: (groupId: string, taskId: string) => void;
   onDeleteGroup?: (groupId: string) => void;
   onEditGroup?: (group: Group) => void;
+  isAddingTask?: boolean;
+  deletingTaskId?: string | null;
+  updatingTaskId?: string | null;
+  removingTaskId?: string | null;
+  newlyCreatedTaskId?: string | null;
+  onTaskEntryAnimationEnd?: (taskId: string) => void;
+  onTaskRemoveAnimationEnd?: (taskId: string) => void;
+  isDeletingGroup?: boolean;
   defaultOpen?: boolean;
   forceOpen?: boolean;
 }) {
@@ -77,7 +99,7 @@ export default function GroupCard({
       : 0;
 
   const handleUpdateTask = (taskId: string, patch: Partial<Task>) => {
-    if (patch.status === "Completed") {
+    if (patch.status === "completed") {
       setChecked((p) => ({ ...p, [taskId]: true }));
     } else {
       setChecked((p) => {
@@ -103,7 +125,7 @@ export default function GroupCard({
     }
   };
 
-  const handleAddTask = (task: Task) => {
+  const handleAddTask = (task: Omit<Task, "id">) => {
     onAddTask(group.id, task);
     setShowAddForm(false);
   };
@@ -171,13 +193,20 @@ export default function GroupCard({
             }
             {onDeleteGroup && (
               <span
-                className="text-muted-foreground/60 hover:text-error"
+                className={`text-muted-foreground/60 hover:text-error ${
+                  isDeletingGroup ? "opacity-50 pointer-events-none" : ""
+                }`}
                 onClick={(e) => {
+                  if (isDeletingGroup) return;
                   e.stopPropagation();
                   onDeleteGroup(group.id);
                 }}
               >
-                <FolderX className="w-4 h-4" />
+                {isDeletingGroup ? (
+                  <LoaderCircle className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FolderX className="w-4 h-4" />
+                )}
               </span>
             )}
             <ChevronDown
@@ -195,26 +224,48 @@ export default function GroupCard({
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-3">
                 {group.tasks.map((t) => (
-                  <TaskCard
+                  <div
                     key={t.id}
-                    task={t}
-                    isDone={t.status === "completed"}
-                    onOpen={() => openTaskModal(t)}
-                    onToggleComplete={() => toggleComplete(t.id)}
-                    onUpdateStatus={(status) =>
-                      handleUpdateTask(t.id, { status })
+                    className={
+                      t.id === newlyCreatedTaskId
+                        ? "animate-in fade-in-0 zoom-in-95 duration-300"
+                        : t.id === removingTaskId
+                          ? "animate-out fade-out-0 slide-out-to-right-2 duration-200 pointer-events-none"
+                          : ""
                     }
-                    onUpdateDifficulty={(difficulty) =>
-                      handleUpdateTask(t.id, { difficulty })
-                    }
-                    onDelete={() =>
-                      setDeleteConfirm({
-                        show: true,
-                        taskId: t.id,
-                        taskName: t.name,
-                      })
-                    }
-                  />
+                    onAnimationEnd={() => {
+                      if (t.id === newlyCreatedTaskId) {
+                        onTaskEntryAnimationEnd?.(t.id);
+                      }
+                      if (t.id === removingTaskId) {
+                        onTaskRemoveAnimationEnd?.(t.id);
+                      }
+                    }}
+                  >
+                    <TaskCard
+                      task={t}
+                      isDone={t.status === "completed"}
+                      isUpdating={updatingTaskId === t.id}
+                      isDeleting={
+                        deletingTaskId === t.id || removingTaskId === t.id
+                      }
+                      onOpen={() => openTaskModal(t)}
+                      onToggleComplete={() => toggleComplete(t.id)}
+                      onUpdateStatus={(status) =>
+                        handleUpdateTask(t.id, { status })
+                      }
+                      onUpdateDifficulty={(difficulty) =>
+                        handleUpdateTask(t.id, { difficulty })
+                      }
+                      onDelete={() =>
+                        setDeleteConfirm({
+                          show: true,
+                          taskId: t.id,
+                          taskName: t.name,
+                        })
+                      }
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -222,6 +273,7 @@ export default function GroupCard({
               <CreateTaskForm
                 onAddTask={handleAddTask}
                 onCancel={() => setShowAddForm(false)}
+                isSubmitting={isAddingTask}
               />
             ) : (
               <button
@@ -230,7 +282,8 @@ export default function GroupCard({
                   setOpen(true);
                   setShowAddForm(true);
                 }}
-                className="w-full px-3 py-2 flex items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground rounded-b-lg border-t border-dashed border-border/30 hover:text-foreground bg-muted/20 hover:bg-muted/30 transition-all duration-200"
+                disabled={isAddingTask}
+                className="w-full px-3 py-2 flex items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground rounded-b-lg border-t border-dashed border-border/30 hover:text-foreground bg-muted/20 hover:bg-muted/30 transition-all duration-200 disabled:opacity-60 disabled:pointer-events-none"
               >
                 <Plus className="w-3 h-3" />
                 Add task
@@ -241,6 +294,11 @@ export default function GroupCard({
       </Collapsible>
       <ConfirmationDialog
         show={deleteConfirm.show}
+        isConfirming={
+          Boolean(deletingTaskId) &&
+          deleteConfirm.taskId === deletingTaskId &&
+          removingTaskId !== deletingTaskId
+        }
         title="Delete Task"
         description={`Are you sure you want to delete "${deleteConfirm.taskName}"? This action cannot be undone.`}
         onConfirm={() => {
