@@ -8,13 +8,22 @@ import { Icons } from "@/components/ui/icons";
 import { Plus, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import toast from "react-hot-toast";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { Task } from "@/types/tasks";
 
 export default function Tasks() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [allCollapsed, setAllCollapsed] = useState(false);
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<Group | null>(null);
+  const [newlyCreatedGroupId, setNewlyCreatedGroupId] = useState<string | null>(
+    null,
+  );
+
+  const firstIconKey = (Object.keys(Icons)[0] ?? "work") as keyof typeof Icons;
+  const normalizeIcon = (icon?: string): keyof typeof Icons =>
+    icon && icon in Icons ? (icon as keyof typeof Icons) : firstIconKey;
 
   const getTasks = async () => {
     try {
@@ -33,8 +42,14 @@ export default function Tasks() {
     retry: true,
   });
 
-  const addGroup = (g: Omit<Group, "id" | "tasks">) => {
-    setGroups((p) => [{ id: `${Date.now()}`, tasks: [], ...g }, ...p]);
+  const addGroup = (g: Group) => {
+    setGroups((p) => [{ ...g }, ...p]);
+  };
+
+  const updateGroup = (groupId: string, patch: Partial<Group>) => {
+    setGroups((p) =>
+      p.map((g) => (g.id === groupId ? { ...g, ...patch, tasks: g.tasks } : g)),
+    );
   };
 
   const addTaskToGroup = (groupId: string, task: Task) =>
@@ -83,7 +98,89 @@ export default function Tasks() {
     groupName?: string;
   }>({ show: false });
 
-  const [showCreate, setShowCreate] = useState(false);
+  const createGroupMutation = useMutation({
+    mutationFn: async (payload: {
+      name: string;
+      description?: string;
+      iconKey: string;
+    }) =>
+      axiosInstance.post("/groups/create", {
+        name: payload.name,
+        description: payload.description,
+        icon: payload.iconKey,
+      }),
+
+    onSuccess: (res) => {
+      const createdGroup = res?.data?.group;
+      if (!createdGroup?._id) {
+        toast.error("Failed to create group");
+        return;
+      }
+      addGroup({
+        id: createdGroup._id,
+        name: createdGroup.name,
+        description: createdGroup.description,
+        icon: normalizeIcon(createdGroup.icon),
+        tasks: [],
+      });
+      setNewlyCreatedGroupId(createdGroup._id);
+      toast.success("Group created successfully");
+      setShowGroupModal(false);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to create group");
+    },
+  });
+
+  const editGroupMutation = useMutation({
+    mutationFn: async ({
+      groupId,
+      payload,
+    }: {
+      groupId: string;
+      payload: { name: string; description?: string; iconKey: string };
+    }) =>
+      axiosInstance.put("/groups/edit", {
+        id: groupId,
+        name: payload.name,
+        description: payload.description,
+        icon: payload.iconKey,
+      }),
+    onSuccess: (res, variables) => {
+      const updatedGroup = res?.data?.group;
+      if (!updatedGroup?._id) {
+        toast.error("Failed to update group");
+        return;
+      }
+      updateGroup(variables.groupId, {
+        name: updatedGroup.name,
+        description: updatedGroup.description,
+        icon: normalizeIcon(updatedGroup.icon),
+      });
+      toast.success("Group updated successfully");
+      setShowGroupModal(false);
+      setEditingGroup(null);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to update group");
+    },
+  });
+
+  const deleteGroupMutation = useMutation({
+    mutationFn: async (groupId: string) =>
+      axiosInstance.delete("/groups/delete", {
+        data: { id: groupId },
+      }),
+    onSuccess: (res, groupId) => {
+      deleteGroup(groupId);
+      setDeleteConfirm({ show: false });
+
+      toast.success(res.data.data.message);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to delete group");
+    },
+  });
 
   return (
     <>
@@ -108,7 +205,10 @@ export default function Tasks() {
           )}
           <Button
             size="icon"
-            onClick={() => setShowCreate(true)}
+            onClick={() => {
+              setEditingGroup(null);
+              setShowGroupModal(true);
+            }}
             title="New group"
           >
             <Plus className="w-4 h-4" />
@@ -144,51 +244,90 @@ export default function Tasks() {
           </div>
         ) : (
           groups.map((g) => (
-            <GroupCard
+            <div
               key={g.id}
-              group={g}
-              onAddTask={addTaskToGroup}
-              onUpdateTask={updateTaskInGroup}
-              defaultOpen={!allCollapsed}
-              forceOpen={!allCollapsed}
-              onDeleteTask={deleteTaskInGroup}
-              onDeleteGroup={(groupId) => {
-                const group = groups.find((g) => g.id === groupId);
-                setDeleteConfirm({
-                  show: true,
-                  groupId,
-                  groupName: group?.name,
-                });
+              className={
+                g.id === newlyCreatedGroupId
+                  ? "animate-in fade-in-0 slide-in-from-top-2 duration-300"
+                  : ""
+              }
+              onAnimationEnd={() => {
+                if (g.id === newlyCreatedGroupId) {
+                  setNewlyCreatedGroupId(null);
+                }
               }}
-            />
+            >
+              <GroupCard
+                group={g}
+                onAddTask={addTaskToGroup}
+                onUpdateTask={updateTaskInGroup}
+                defaultOpen={!allCollapsed}
+                forceOpen={!allCollapsed}
+                onDeleteTask={deleteTaskInGroup}
+                onDeleteGroup={(groupId) => {
+                  const group = groups.find((g) => g.id === groupId);
+                  setDeleteConfirm({
+                    show: true,
+                    groupId,
+                    groupName: group?.name,
+                  });
+                }}
+                onEditGroup={(group) => {
+                  setEditingGroup(group);
+                  setShowGroupModal(true);
+                }}
+              />
+            </div>
           ))
         )}
       </div>
 
       <CreateGroupModal
-        show={showCreate}
-        toggleShow={() => setShowCreate(false)}
-        onCreate={(g) => {
+        show={showGroupModal}
+        toggleShow={() => {
+          setShowGroupModal(false);
+          setEditingGroup(null);
+        }}
+        mode={editingGroup ? "edit" : "create"}
+        isSubmitting={
+          createGroupMutation.isPending || editGroupMutation.isPending
+        }
+        initialData={
+          editingGroup
+            ? {
+                id: editingGroup.id,
+                name: editingGroup.name,
+                description: editingGroup.description,
+                iconKey: editingGroup.icon,
+              }
+            : undefined
+        }
+        onSubmit={(g) => {
           if (!g.name) return;
-          addGroup({
-            name: g.name,
-            description: g.description,
-            icon: g.iconKey as keyof typeof Icons,
-          });
-          setShowCreate(false);
+          if (editingGroup) {
+            editGroupMutation.mutate({
+              groupId: editingGroup.id,
+              payload: g,
+            });
+            return;
+          }
+          createGroupMutation.mutate(g);
         }}
       />
       <ConfirmationDialog
         show={deleteConfirm.show}
+        isConfirming={deleteGroupMutation.isPending}
         title="Delete Group"
         description={`Are you sure you want to delete "${deleteConfirm.groupName}"? All tasks in this group will also be deleted. This action cannot be undone.`}
         onConfirm={() => {
           if (deleteConfirm.groupId) {
-            deleteGroup(deleteConfirm.groupId);
+            deleteGroupMutation.mutate(deleteConfirm.groupId);
           }
+        }}
+        onCancel={() => {
+          if (deleteGroupMutation.isPending) return;
           setDeleteConfirm({ show: false });
         }}
-        onCancel={() => setDeleteConfirm({ show: false })}
       />
     </>
   );

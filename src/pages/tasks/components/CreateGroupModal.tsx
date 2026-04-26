@@ -5,9 +5,17 @@ import { Button } from "@/components/ui/button";
 import IconCarousel from "@/components/IconCarousel";
 import { Icons } from "@/components/ui/icons";
 import Label from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { LoaderCircle } from "lucide-react";
 
 type CreatePayload = {
+  name: string;
+  description?: string;
+  iconKey: string;
+};
+
+type GroupFormData = {
+  id?: string;
   name: string;
   description?: string;
   iconKey: string;
@@ -16,38 +24,48 @@ type CreatePayload = {
 export default function CreateGroupModal({
   show,
   toggleShow,
-  onCreate,
+  mode = "create",
+  initialData,
+  isSubmitting = false,
+  onSubmit,
 }: {
   show: boolean;
   toggleShow: () => void;
-  onCreate: (payload: CreatePayload) => void;
+  mode?: "create" | "edit";
+  initialData?: GroupFormData;
+  isSubmitting?: boolean;
+  onSubmit: (payload: CreatePayload) => void;
 }) {
-  const [form, setForm] = useState<{
-    name: string;
-    description: string;
-    iconKey: string;
-  }>({
+  const [form, setForm] = useState({
     name: "",
     description: "",
     iconKey: Object.keys(Icons)[0] ?? "work",
   });
 
-  const reset = () =>
+  useEffect(() => {
+    if (!show) return;
+    if (mode === "edit" && initialData) {
+      setForm({
+        name: initialData.name ?? "",
+        description: initialData.description ?? "",
+        iconKey: initialData.iconKey ?? Object.keys(Icons)[0] ?? "work",
+      });
+      return;
+    }
     setForm({
       name: "",
       description: "",
       iconKey: Object.keys(Icons)[0] ?? "work",
     });
+  }, [show, mode, initialData]);
 
-  const handleCreate = () => {
-    if (!form.name) return;
-    onCreate({
+  const handleSubmit = () => {
+    if (!form.name || isSubmitting) return;
+    onSubmit({
       name: form.name,
       description: form.description,
       iconKey: form.iconKey,
     });
-    reset();
-    toggleShow();
   };
 
   return (
@@ -55,7 +73,7 @@ export default function CreateGroupModal({
       className="w-[500px]"
       show={show}
       toggleShow={toggleShow}
-      title="Create group"
+      title={mode === "edit" ? "Edit group" : "Create group"}
     >
       <div className="space-y-3">
         <Label htmlFor="group-name" className="text-sm">
@@ -87,14 +105,17 @@ export default function CreateGroupModal({
         <div className="flex justify-end gap-2">
           <Button
             variant="outline"
+            disabled={isSubmitting}
             onClick={() => {
-              reset();
               toggleShow();
             }}
           >
             Cancel
           </Button>
-          <Button onClick={handleCreate}>Create</Button>
+          <Button disabled={!form.name || isSubmitting} onClick={handleSubmit}>
+            {isSubmitting && <LoaderCircle className=" h-4 w-4 animate-spin" />}
+            {mode === "edit" ? "Save" : "Create"}
+          </Button>
         </div>
       </div>
     </Modal>

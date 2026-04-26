@@ -22,12 +22,14 @@ export default function GroupCard({
   forceOpen,
   onDeleteTask,
   onDeleteGroup,
+  onEditGroup,
 }: {
   group: Group;
   onAddTask: (groupId: string, task: Task) => void;
   onUpdateTask: (groupId: string, taskId: string, patch: Partial<Task>) => void;
   onDeleteTask?: (groupId: string, taskId: string) => void;
   onDeleteGroup?: (groupId: string) => void;
+  onEditGroup?: (group: Group) => void;
   defaultOpen?: boolean;
   forceOpen?: boolean;
 }) {
@@ -140,7 +142,7 @@ export default function GroupCard({
                 className="text-muted-foreground/60 hover:text-primary"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowAddForm(true);
+                  onEditGroup?.(group);
                 }}
               >
                 <SquarePen className="w-4 h-4" />
