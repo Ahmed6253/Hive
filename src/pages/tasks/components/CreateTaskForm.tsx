@@ -89,11 +89,11 @@ export default function CreateTaskForm({
             placeholder="Difficulty"
             className="min-w-[110px]"
           />
-          <div className="flex gap-2 ml-auto">
+          <div className="lg:flex hidden gap-2 ml-auto">
             <Button size={"icon-sm"} onClick={handleAdd} className="gap-2">
               <CheckIcon className="w-4 h-4" />
             </Button>
-            <Button size={"icon-sm"} variant="outline" onClick={onCancel}>
+            <Button size={"icon-sm"} variant="secondary" onClick={onCancel}>
               <X />
             </Button>
           </div>
@@ -105,6 +105,14 @@ export default function CreateTaskForm({
           rows={2}
           className="resize-none text-sm"
         />
+        <div className="flex lg:hidden gap-2 ml-auto">
+          <Button size={"icon-sm"} onClick={handleAdd} className="gap-2">
+            <CheckIcon className="w-4 h-4" />
+          </Button>
+          <Button size={"icon-sm"} variant="secondary" onClick={onCancel}>
+            <X />
+          </Button>
+        </div>
       </div>
     </div>
   );

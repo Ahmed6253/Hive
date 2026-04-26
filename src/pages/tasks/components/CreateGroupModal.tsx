@@ -104,7 +104,7 @@ export default function CreateGroupModal({
 
         <div className="flex justify-end gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             disabled={isSubmitting}
             onClick={() => {
               toggleShow();

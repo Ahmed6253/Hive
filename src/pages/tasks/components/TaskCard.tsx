@@ -44,6 +44,7 @@ export default function TaskCard({
   onUpdateStatus,
   onUpdateDifficulty,
   onDelete,
+  onOpen,
 }: {
   task: Task;
   isDone: boolean;
@@ -51,18 +52,21 @@ export default function TaskCard({
   onUpdateStatus: (status: string) => void;
   onUpdateDifficulty: (difficulty: Task["difficulty"]) => void;
   onDelete: () => void;
+  onOpen: () => void;
 }) {
   return (
     <div
+      onClick={onOpen}
       className={`rounded-lg bg-background/50 shadow-sm p-3 border border-transparent flex flex-col gap-1.5 transition-all duration-200 hover:shadow-sm ${
         isDone ? "opacity-70" : "border-border/50 hover:border-border/40"
-      }`}
+      } cursor-pointer`}
     >
       <div className="flex items-center gap-1.5">
         <Checkbox
           aria-label="Mark complete"
           checked={isDone}
-          onCheckedChange={onToggleComplete}
+          onCheckedChange={() => onToggleComplete()}
+          onClick={(e) => e.stopPropagation()}
           className={`mt-0.5 w-4 h-4 rounded-md border-1 shrink-0 flex items-center justify-center transition-all duration-200 ${
             isDone
               ? "bg-success border-success"
@@ -82,15 +86,18 @@ export default function TaskCard({
           variant="ghost"
           size="icon-xs"
           className="text-muted-foreground/60 hover:text-error shrink-0 -mt-0.5 -mr-1"
-          onClick={onDelete}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
         >
           <Trash2 className="w-3 h-3" />
         </Button>
       </div>
       {task.description && (
         <p
-          className={`font-normal text-[10px] leading-snug transition-all block ${
-            isDone ? "line-through text-muted-foreground" : ""
+          className={`font-normal text-[10px] text-muted-foreground leading-snug transition-all block ${
+            isDone ? "line-through text-muted-foreground/50" : ""
           }`}
         >
           {task.description}

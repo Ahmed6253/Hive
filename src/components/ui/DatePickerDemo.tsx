@@ -10,6 +10,10 @@ import {
 } from "@/components/ui/popover";
 import { useEffect, useState } from "react";
 
+function isValidDate(date?: Date): date is Date {
+  return !!date && !Number.isNaN(date.getTime());
+}
+
 export function DatePickerDemo({
   value,
   onChange,
@@ -23,27 +27,29 @@ export function DatePickerDemo({
 
   useEffect(() => setDate(value), [value]);
 
+  const safeDate = isValidDate(date) ? date : undefined;
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          data-empty={!date}
+          data-empty={!safeDate}
           className={`w-full border-accent overflow-hidden text-ellipsis bg-transparent hover:bg-transparent justify-between text-left font-normal data-[empty=true]:text-accent ${className}`}
         >
-          {date ? format(date, "PPP") : <span>Pick a date</span>}
+          {safeDate ? format(safeDate, "PPP") : <span>Pick a date</span>}
           <ChevronDown />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
-          selected={date}
+          selected={safeDate}
           onSelect={(d) => {
             setDate(d ?? undefined);
             onChange?.(d ?? undefined);
           }}
-          defaultMonth={date}
+          defaultMonth={safeDate}
         />
       </PopoverContent>
     </Popover>

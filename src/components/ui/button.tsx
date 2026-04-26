@@ -14,10 +14,9 @@ const buttonVariants = cva(
           "bg-error text-white hover:bg-error/90 focus-visible:ring-error/20 dark:focus-visible:ring-error/40 dark:bg-error/60",
         outline:
           "border bg-transparent shadow-xs hover:bg-accent/10  dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        secondary: "bg-background text-text hover:bg-background/90",
         ghost:
-          "hover:bg-transparent hover:text-accent-foreground dark:hover:bg-accent/50",
+          "hover:bg-transparent hover:text-primary dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -43,7 +42,7 @@ function Button({
   variant = "default",
   size = "default",
   asChild = false,
-  loading = false,
+
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {

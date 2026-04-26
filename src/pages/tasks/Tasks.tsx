@@ -191,7 +191,7 @@ export default function Tasks() {
         <div className="flex items-center justify-end gap-2 mb-4">
           {groups.length > 0 && (
             <Button
-              variant="outline"
+              variant="secondary"
               size="icon"
               onClick={() => setAllCollapsed(!allCollapsed)}
               title={allCollapsed ? "Expand all" : "Collapse all"}

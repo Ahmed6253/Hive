@@ -10,6 +10,7 @@ import { ChevronDown, Plus, SquarePen, FolderX } from "lucide-react";
 import ConfirmationDialog from "../../../components/ConfirmationDialog";
 import TaskCard from "./TaskCard";
 import CreateTaskForm from "./CreateTaskForm";
+import TaskDetailsModal from "./TaskDetailsModal";
 import { Task, Group } from "@/types/tasks";
 
 export type { Group };
@@ -40,6 +41,14 @@ export default function GroupCard({
       setOpen(forceOpen);
     }
   }, [forceOpen]);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  useEffect(() => {
+    if (!selectedTask) return;
+    const latest = group.tasks.find((t) => t.id === selectedTask.id) ?? null;
+    setSelectedTask(latest);
+  }, [group.tasks, selectedTask]);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{
@@ -97,6 +106,18 @@ export default function GroupCard({
   const handleAddTask = (task: Task) => {
     onAddTask(group.id, task);
     setShowAddForm(false);
+  };
+
+  const openTaskModal = (task: Task) => {
+    setSelectedTask(task);
+    setShowTaskModal(true);
+  };
+
+  const handleUpdateTaskFromModal = (taskId: string, patch: Partial<Task>) => {
+    onUpdateTask(group.id, taskId, patch);
+    setSelectedTask((prev) =>
+      prev && prev.id === taskId ? { ...prev, ...patch } : prev,
+    );
   };
 
   return (
@@ -178,6 +199,7 @@ export default function GroupCard({
                     key={t.id}
                     task={t}
                     isDone={t.status === "completed"}
+                    onOpen={() => openTaskModal(t)}
                     onToggleComplete={() => toggleComplete(t.id)}
                     onUpdateStatus={(status) =>
                       handleUpdateTask(t.id, { status })
@@ -228,6 +250,12 @@ export default function GroupCard({
           setDeleteConfirm({ show: false });
         }}
         onCancel={() => setDeleteConfirm({ show: false })}
+      />
+      <TaskDetailsModal
+        show={showTaskModal}
+        toggleShow={() => setShowTaskModal(false)}
+        task={selectedTask}
+        onUpdateTask={handleUpdateTaskFromModal}
       />
     </div>
   );

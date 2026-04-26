@@ -1,6 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
-import { ErrorPayload } from "vite/types/hmrPayload.js";
 
 export async function registerUser(data: {
   name: string;
