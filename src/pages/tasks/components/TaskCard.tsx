@@ -63,10 +63,14 @@ export default function TaskCard({
     <div
       onClick={onOpen}
       className={`rounded-lg relative bg-background/50 shadow-sm p-3 border border-transparent min-h-[95px] flex flex-col gap-1.5 transition-all duration-200 hover:shadow-sm ${
-        isDone ? "opacity-70" : "border-border/50 hover:border-border/40"
+        isDone
+          ? "opacity-70"
+          : isBusy
+            ? "cursor-not-allowed"
+            : "border-border/50 hover:border-border/30"
       } cursor-pointer`}
     >
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center  gap-1.5">
         <Checkbox
           aria-label="Mark complete"
           checked={isDone}
