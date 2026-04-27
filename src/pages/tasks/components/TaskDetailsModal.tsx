@@ -11,7 +11,6 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Task } from "@/types/tasks";
-import { Button } from "@/components/ui/button";
 
 export default function TaskDetailsModal({
   show,
@@ -219,10 +218,6 @@ export default function TaskDetailsModal({
               }}
             />
           </div>
-        </div>
-        <div className="flex justify-end gap-2 ">
-          <Button variant="secondary">Close</Button>
-          <Button>Save</Button>
         </div>
       </div>
     </Modal>

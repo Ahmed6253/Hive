@@ -88,22 +88,22 @@ export default function TaskCard({
             {task.name}
           </span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          className="text-muted-foreground/60 hover:text-error shrink-0 -mt-0.5 -mr-1"
-          disabled={isDeleting}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-        >
-          {isDeleting ? (
-            <LoaderCircle className="w-3 h-3 animate-spin" />
-          ) : (
+        {isDeleting || isUpdating ? (
+          <LoaderCircle className="w-5 h-5 animate-spin" />
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-muted-foreground/60 hover:text-error shrink-0 -mt-0.5 -mr-1"
+            disabled={isDeleting}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+          >
             <Trash2 className="w-3 h-3" />
-          )}
-        </Button>
+          </Button>
+        )}
       </div>
       {task.description && (
         <p
@@ -115,9 +115,6 @@ export default function TaskCard({
         </p>
       )}
       <div className="flex flex-wrap items-center gap-1 mt-auto">
-        {isUpdating && (
-          <LoaderCircle className="w-3 h-3 animate-spin text-muted-foreground" />
-        )}
         <Select value={task.status} onValueChange={onUpdateStatus}>
           <SelectTrigger
             disabled={isBusy}
