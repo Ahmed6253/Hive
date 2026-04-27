@@ -62,7 +62,7 @@ export default function TaskCard({
   return (
     <div
       onClick={onOpen}
-      className={`rounded-lg bg-background/50 shadow-sm p-3 border border-transparent min-h-[95px] flex flex-col gap-1.5 transition-all duration-200 hover:shadow-sm ${
+      className={`rounded-lg relative bg-background/50 shadow-sm p-3 border border-transparent min-h-[95px] flex flex-col gap-1.5 transition-all duration-200 hover:shadow-sm ${
         isDone ? "opacity-70" : "border-border/50 hover:border-border/40"
       } cursor-pointer`}
     >
@@ -79,29 +79,32 @@ export default function TaskCard({
               : "border-border hover:border-primary"
           }`}
         />
-        <div className="flex-1 min-w-0">
-          <span
-            className={`font-normal text-xs leading-snug transition-all block ${
-              isDone ? "line-through text-muted-foreground" : ""
-            }`}
-          >
-            {task.name}
-          </span>
-        </div>
+
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleComplete();
+          }}
+          className={`font-normal w-fit  text-xs leading-snug transition-all block ${
+            isDone ? "line-through text-muted-foreground" : ""
+          }`}
+        >
+          {task.name}
+        </span>
+
         {isDeleting || isUpdating ? (
-          <LoaderCircle className="w-5 h-5 animate-spin" />
+          <LoaderCircle className="absolute w-5 h-5 right-3 top-3 animate-spin shrink-0 " />
         ) : (
           <Button
             variant="ghost"
-            size="icon-xs"
-            className="text-muted-foreground/60 hover:text-error shrink-0 -mt-0.5 -mr-1"
+            className="text-muted-foreground/60 hover:text-error shrink-0 absolute right-0 top-1"
             disabled={isDeleting}
             onClick={(e) => {
               e.stopPropagation();
               onDelete();
             }}
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 />
           </Button>
         )}
       </div>
