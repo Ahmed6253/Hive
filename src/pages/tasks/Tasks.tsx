@@ -8,12 +8,11 @@ import { Icons } from "@/components/ui/icons";
 import { Plus, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import toast from "react-hot-toast";
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { Task } from "@/types/tasks";
 
 export default function Tasks() {
-  const queryClient = useQueryClient();
   const [groups, setGroups] = useState<Group[]>([]);
   const [allCollapsed, setAllCollapsed] = useState(false);
   const [showGroupModal, setShowGroupModal] = useState(false);
@@ -61,7 +60,6 @@ export default function Tasks() {
   const { isFetching } = useQuery({
     queryKey: ["getTasks"],
     queryFn: getTasks,
-    retry: true,
   });
 
   const addGroup = (g: Group) => {
@@ -116,6 +114,15 @@ export default function Tasks() {
 
   const getTaskById = (groupId: string, taskId: string) =>
     groups.find((g) => g.id === groupId)?.tasks.find((t) => t.id === taskId);
+
+  const isPastDueDate = (dueDate?: string) => {
+    if (!dueDate) return false;
+    const selected = new Date(`${dueDate}T00:00:00`);
+    if (Number.isNaN(selected.getTime())) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return selected < today;
+  };
 
   const [deleteConfirm, setDeleteConfirm] = useState<{
     show: boolean;
@@ -222,15 +229,19 @@ export default function Tasks() {
     }: {
       groupId: string;
       payload: Omit<Task, "id">;
-    }) =>
-      axiosInstance.post("/tasks/create", {
+    }) => {
+      if (isPastDueDate(payload.dueDate)) {
+        throw new Error("Due date cannot be before current date");
+      }
+      return axiosInstance.post("/tasks/create", {
         name: payload.name,
         description: payload.description,
         dueDate: payload.dueDate,
         status: payload.status,
         difficulty: payload.difficulty,
         groupId,
-      }),
+      });
+    },
     onSuccess: (res, variables) => {
       const createdTask = res?.data?.task;
       if (!createdTask?._id) {
@@ -252,7 +263,11 @@ export default function Tasks() {
       toast.success("Task created successfully");
     },
     onError: (error) => {
-      toast.error(error?.response?.data?.message || "Failed to create task");
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to create task",
+      );
     },
     onSettled: () => {
       setCreatingTaskGroupId(null);
@@ -285,9 +300,13 @@ export default function Tasks() {
         difficulty: nextTask.difficulty,
       });
     },
+    onSuccess: (res, variables) => {
+      const updatedTask = res?.data?.task;
+      updateTaskInGroup(variables.groupId, variables.taskId, updatedTask);
+      toast.success("Task updated successfully");
+    },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "Failed to update task");
-      queryClient.invalidateQueries({ queryKey: ["getTasks"] });
     },
     onSettled: () => {
       setUpdatingTask(null);
@@ -386,9 +405,9 @@ export default function Tasks() {
               key={g.id}
               className={
                 g.id === newlyCreatedGroupId
-                  ? "animate-in fade-in-0 slide-in-from-top-2 duration-300"
+                  ? "animate-in fade-in-0 zoom-in-95 duration-500"
                   : g.id === removingGroupId
-                    ? "animate-out fade-out-0 slide-out-to-top-2 duration-200 pointer-events-none"
+                    ? "animate-out fade-out-0 zoom-out-95 duration-500 pointer-events-none [animation-fill-mode:forwards]"
                     : ""
               }
               onAnimationEnd={() => {
@@ -403,11 +422,18 @@ export default function Tasks() {
             >
               <GroupCard
                 group={g}
-                onAddTask={(groupId, taskPayload) =>
-                  createTaskMutation.mutate({ groupId, payload: taskPayload })
-                }
+                onAddTask={async (groupId, taskPayload) => {
+                  try {
+                    await createTaskMutation.mutateAsync({
+                      groupId,
+                      payload: taskPayload,
+                    });
+                    return true;
+                  } catch {
+                    return false;
+                  }
+                }}
                 onUpdateTask={(groupId, taskId, patch) => {
-                  updateTaskInGroup(groupId, taskId, patch);
                   updateTaskMutation.mutate({ groupId, taskId, patch });
                 }}
                 defaultOpen={!allCollapsed}

@@ -62,7 +62,7 @@ export default function TaskCard({
   return (
     <div
       onClick={onOpen}
-      className={`rounded-lg bg-background/50 shadow-sm p-3 border border-transparent flex flex-col gap-1.5 transition-all duration-200 hover:shadow-sm ${
+      className={`rounded-lg bg-background/50 shadow-sm p-3 border border-transparent min-h-[95px] flex flex-col gap-1.5 transition-all duration-200 hover:shadow-sm ${
         isDone ? "opacity-70" : "border-border/50 hover:border-border/40"
       } cursor-pointer`}
     >
@@ -107,7 +107,7 @@ export default function TaskCard({
       </div>
       {task.description && (
         <p
-          className={`font-normal text-[10px] text-muted-foreground leading-snug transition-all block ${
+          className={`font-normal text-[10px] text-muted-foreground leading-snug line-clamp-1 break-words${
             isDone ? "line-through text-muted-foreground/50" : ""
           }`}
         >

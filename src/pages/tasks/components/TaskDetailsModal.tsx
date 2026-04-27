@@ -11,6 +11,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Task } from "@/types/tasks";
+import { Button } from "@/components/ui/button";
 
 export default function TaskDetailsModal({
   show,
@@ -84,6 +85,7 @@ export default function TaskDetailsModal({
           <p className="text-xs text-muted-foreground mb-1">Name</p>
           {editingName ? (
             <Input
+              className="border-0 focus-visible:ring-0 px-2 mt-0 py-1.5 bg-muted/40"
               autoFocus
               value={localTask.name}
               onChange={(e) =>
@@ -114,7 +116,7 @@ export default function TaskDetailsModal({
             <button
               type="button"
               onClick={() => setEditingName(true)}
-              className="w-full text-left rounded-md px-2 py-1.5 hover:bg-muted/40 text-sm"
+              className="w-full text-left rounded-md px-2 py-2 text-sm cursor-pointer"
             >
               {localTask.name}
             </button>
@@ -127,7 +129,7 @@ export default function TaskDetailsModal({
             <Textarea
               autoFocus
               rows={6}
-              className="resize-none"
+              className="resize-none border-0 min-h-fit px-2 focus-visible:ring-0 bg-muted/40"
               value={localTask.description ?? ""}
               onChange={(e) =>
                 setLocalTask((prev) =>
@@ -142,7 +144,7 @@ export default function TaskDetailsModal({
             <button
               type="button"
               onClick={() => setEditingDescription(true)}
-              className="w-full text-left rounded-md px-2 py-2 hover:bg-muted/40 text-sm min-h-24"
+              className="w-full text-left rounded-md px-2 py-2 text-sm cursor-pointer"
             >
               {localTask.description || (
                 <span className="text-muted-foreground">Add description</span>
@@ -217,6 +219,10 @@ export default function TaskDetailsModal({
               }}
             />
           </div>
+        </div>
+        <div className="flex justify-end gap-2 ">
+          <Button variant="secondary">Close</Button>
+          <Button>Save</Button>
         </div>
       </div>
     </Modal>

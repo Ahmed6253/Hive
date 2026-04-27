@@ -32,7 +32,7 @@ export default function Modal({
   return (
     <div
       onClick={toggle}
-      className="fixed top-0 left-0 w-full h-full bg-bg/90 flex justify-center items-center"
+      className="fixed z-999 top-0 left-0 w-full h-svh bg-bg/90 flex justify-center items-center"
     >
       <div
         onClick={(e) => e.stopPropagation()}

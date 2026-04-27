@@ -40,7 +40,7 @@ export default function GroupCard({
   isDeletingGroup = false,
 }: {
   group: Group;
-  onAddTask: (groupId: string, task: Omit<Task, "id">) => void;
+  onAddTask: (groupId: string, task: Omit<Task, "id">) => Promise<boolean>;
   onUpdateTask: (groupId: string, taskId: string, patch: Partial<Task>) => void;
   onDeleteTask?: (groupId: string, taskId: string) => void;
   onDeleteGroup?: (groupId: string) => void;
@@ -125,9 +125,11 @@ export default function GroupCard({
     }
   };
 
-  const handleAddTask = (task: Omit<Task, "id">) => {
-    onAddTask(group.id, task);
-    setShowAddForm(false);
+  const handleAddTask = async (task: Omit<Task, "id">) => {
+    const created = await onAddTask(group.id, task);
+    if (created) {
+      setShowAddForm(false);
+    }
   };
 
   const openTaskModal = (task: Task) => {
@@ -158,6 +160,9 @@ export default function GroupCard({
                 <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
                   {group.tasks.length}
                 </span>
+                {isAddingTask && (
+                  <LoaderCircle className="w-4.5 h-4.5 animate-spin text-primary" />
+                )}
               </div>
               {group.description && (
                 <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
@@ -228,9 +233,9 @@ export default function GroupCard({
                     key={t.id}
                     className={
                       t.id === newlyCreatedTaskId
-                        ? "animate-in fade-in-0 zoom-in-95 duration-300"
+                        ? "animate-in fade-in-0 zoom-in-95 duration-500"
                         : t.id === removingTaskId
-                          ? "animate-out fade-out-0 slide-out-to-right-2 duration-200 pointer-events-none"
+                          ? "animate-out fade-out-0 zoom-out-95 duration-500 pointer-events-none [animation-fill-mode:forwards]"
                           : ""
                     }
                     onAnimationEnd={() => {
