@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Trash2, Calendar } from "lucide-react";
+import { Trash2, Calendar, LoaderCircle } from "lucide-react";
 import { Task } from "@/types/tasks";
 
 function formatDate(raw?: string) {
@@ -44,6 +44,9 @@ export default function TaskCard({
   onUpdateStatus,
   onUpdateDifficulty,
   onDelete,
+  onOpen,
+  isUpdating = false,
+  isDeleting = false,
 }: {
   task: Task;
   isDone: boolean;
@@ -51,46 +54,68 @@ export default function TaskCard({
   onUpdateStatus: (status: string) => void;
   onUpdateDifficulty: (difficulty: Task["difficulty"]) => void;
   onDelete: () => void;
+  onOpen: () => void;
+  isUpdating?: boolean;
+  isDeleting?: boolean;
 }) {
+  const isBusy = isUpdating || isDeleting;
   return (
     <div
-      className={`rounded-lg bg-background/50 shadow-sm p-3 border border-transparent flex flex-col gap-1.5 transition-all duration-200 hover:shadow-sm ${
-        isDone ? "opacity-70" : "border-border/50 hover:border-border/40"
-      }`}
+      onClick={onOpen}
+      className={`rounded-lg relative bg-background/50 shadow-sm p-3 border border-transparent min-h-[95px] flex flex-col gap-1.5 transition-all duration-200 hover:shadow-sm ${
+        isDone
+          ? "opacity-70"
+          : isBusy
+            ? "cursor-not-allowed"
+            : "border-border/50 hover:border-border/30"
+      } cursor-pointer`}
     >
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center  gap-1.5">
         <Checkbox
           aria-label="Mark complete"
           checked={isDone}
-          onCheckedChange={onToggleComplete}
+          onCheckedChange={() => onToggleComplete()}
+          onClick={(e) => e.stopPropagation()}
+          disabled={isBusy}
           className={`mt-0.5 w-4 h-4 rounded-md border-1 shrink-0 flex items-center justify-center transition-all duration-200 ${
             isDone
               ? "bg-success border-success"
               : "border-border hover:border-primary"
           }`}
         />
-        <div className="flex-1 min-w-0">
-          <span
-            className={`font-normal text-xs leading-snug transition-all block ${
-              isDone ? "line-through text-muted-foreground" : ""
-            }`}
-          >
-            {task.name}
-          </span>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          className="text-muted-foreground/60 hover:text-error shrink-0 -mt-0.5 -mr-1"
-          onClick={onDelete}
+
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleComplete();
+          }}
+          className={`font-normal w-fit  text-xs leading-snug transition-all block ${
+            isDone ? "line-through text-muted-foreground" : ""
+          }`}
         >
-          <Trash2 className="w-3 h-3" />
-        </Button>
+          {task.name}
+        </span>
+
+        {isDeleting || isUpdating ? (
+          <LoaderCircle className="absolute w-5 h-5 right-3 top-3 animate-spin shrink-0 " />
+        ) : (
+          <Button
+            variant="ghost"
+            className="text-muted-foreground/60 hover:text-error shrink-0 absolute right-0 top-1"
+            disabled={isDeleting}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+          >
+            <Trash2 />
+          </Button>
+        )}
       </div>
       {task.description && (
         <p
-          className={`font-normal text-[10px] leading-snug transition-all block ${
-            isDone ? "line-through text-muted-foreground" : ""
+          className={`font-normal text-[10px] text-muted-foreground leading-snug line-clamp-1 break-words${
+            isDone ? "line-through text-muted-foreground/50" : ""
           }`}
         >
           {task.description}
@@ -99,6 +124,7 @@ export default function TaskCard({
       <div className="flex flex-wrap items-center gap-1 mt-auto">
         <Select value={task.status} onValueChange={onUpdateStatus}>
           <SelectTrigger
+            disabled={isBusy}
             className={`data-[size=default]:h-5 bg-transparent rounded-md px-1.5 py-0.5 text-[10px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-2 border ${getStatusPillClass(
               task.status,
             )}`}
@@ -114,6 +140,7 @@ export default function TaskCard({
         </Select>
         <Select value={task.difficulty} onValueChange={onUpdateDifficulty}>
           <SelectTrigger
+            disabled={isBusy}
             className={`data-[size=default]:h-5 rounded-md px-1.5 py-0.5 text-[10px] font-medium shadow-none focus-visible:ring-0 gap-1 [&_svg]:size-2 ${getDifficultyPillClass(
               task.difficulty,
             )}`}

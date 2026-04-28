@@ -1,95 +1,46 @@
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import GroupCard, { Group } from "@/components/GroupCard";
-import CreateGroupModal from "@/components/CreateGroupModal";
+import GroupCard from "@/pages/tasks/components/GroupCard";
+import CreateGroupModal from "@/pages/tasks/components/CreateGroupModal";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { Icons } from "@/components/ui/icons";
 import { Plus, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
-import toast from "react-hot-toast";
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { axiosInstance } from "@/lib/axios";
-import { Task } from "@/types/tasks";
+import { useTasks } from "./useTasks";
 
 export default function Tasks() {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [allCollapsed, setAllCollapsed] = useState(false);
-
-  const getTasks = async () => {
-    try {
-      const res = await axiosInstance.get("/tasks/get");
-      setGroups(res?.data?.tasks);
-      return res.data;
-    } catch (error) {
-      toast.error("Failed to fetch tasks");
-      throw error;
-    }
-  };
-
-  const { isLoading, error } = useQuery({
-    queryKey: ["getTasks"],
-    queryFn: getTasks,
-    retry: true,
-  });
-
-  useEffect(() => {
-    if (error) {
-      toast.error("Failed to fetch tasks");
-    }
-  }, [error]);
-
-  const addGroup = (g: Omit<Group, "id" | "tasks">) => {
-    setGroups((p) => [{ id: `${Date.now()}`, tasks: [], ...g }, ...p]);
-  };
-
-  const addTaskToGroup = (groupId: string, task: Task) =>
-    setGroups((p) =>
-      p.map((g) =>
-        g.id === groupId ? { ...g, tasks: [...g.tasks, task] } : g,
-      ),
-    );
-
-  const updateTaskInGroup = (
-    groupId: string,
-    taskId: string,
-    patch: Partial<Task>,
-  ) => {
-    setGroups((p) =>
-      p.map((g) =>
-        g.id === groupId
-          ? {
-              ...g,
-              tasks: g.tasks.map((t) =>
-                t.id === taskId ? { ...t, ...patch } : t,
-              ),
-            }
-          : g,
-      ),
-    );
-  };
-
-  const deleteTaskInGroup = (groupId: string, taskId: string) => {
-    setGroups((p) =>
-      p.map((g) =>
-        g.id === groupId
-          ? { ...g, tasks: g.tasks.filter((t) => t.id !== taskId) }
-          : g,
-      ),
-    );
-  };
-
-  const deleteGroup = (groupId: string) => {
-    setGroups((p) => p.filter((g) => g.id !== groupId));
-  };
-
-  const [deleteConfirm, setDeleteConfirm] = useState<{
-    show: boolean;
-    groupId?: string;
-    groupName?: string;
-  }>({ show: false });
-
-  const [showCreate, setShowCreate] = useState(false);
+  const {
+    groups,
+    isFetching,
+    allCollapsed,
+    setAllCollapsed,
+    showGroupModal,
+    editingGroup,
+    newlyCreatedGroupId,
+    removingGroupId,
+    deletingGroupId,
+    creatingTaskGroupId,
+    newlyCreatedTask,
+    deletingTask,
+    updatingTask,
+    removingTask,
+    deleteConfirm,
+    addTask,
+    updateTaskMutation,
+    deleteTaskMutation,
+    handleDeleteGroup,
+    handleEditGroup,
+    openNewGroupModal,
+    closeGroupModal,
+    submitGroupModal,
+    confirmDeleteGroup,
+    cancelDeleteGroup,
+    handleGroupAnimationEnd,
+    handleTaskEntryAnimationEnd,
+    handleTaskRemoveAnimationEnd,
+    createGroupMutation,
+    editGroupMutation,
+    deleteGroupMutation,
+  } = useTasks();
 
   return (
     <>
@@ -100,30 +51,26 @@ export default function Tasks() {
         <div className="flex items-center justify-end gap-2 mb-4">
           {groups.length > 0 && (
             <Button
-              variant="outline"
+              variant="secondary"
               size="icon"
               onClick={() => setAllCollapsed(!allCollapsed)}
               title={allCollapsed ? "Expand all" : "Collapse all"}
             >
               {allCollapsed ? (
-                <ChevronsUpDown className="w-4 h-4 transition-transform duration-200" />
+                <ChevronsUpDown className=" transition-transform duration-200" />
               ) : (
-                <ChevronsDownUp className="w-4 h-4 transition-transform duration-200" />
+                <ChevronsDownUp className=" transition-transform duration-200" />
               )}
             </Button>
           )}
-          <Button
-            size="icon"
-            onClick={() => setShowCreate(true)}
-            title="New group"
-          >
-            <Plus className="w-4 h-4" />
+          <Button size="icon" onClick={openNewGroupModal} title="New group">
+            <Plus className="" />
           </Button>
         </div>
       </PageHeader>
 
       <div className="space-y-4">
-        {isLoading ? (
+        {isFetching ? (
           <>
             {[1, 2, 3].map((i) => (
               <div
@@ -144,57 +91,90 @@ export default function Tasks() {
               </div>
             ))}
           </>
-        ) : groups?.length < 0 && !isLoading ? (
+        ) : groups?.length === 0 && !isFetching ? (
           <div className="text-muted-foreground">
             No groups yet. Create one to get started.
           </div>
         ) : (
           groups.map((g) => (
-            <GroupCard
+            <div
               key={g.id}
-              group={g}
-              onAddTask={addTaskToGroup}
-              onUpdateTask={updateTaskInGroup}
-              defaultOpen={!allCollapsed}
-              forceOpen={!allCollapsed}
-              onDeleteTask={deleteTaskInGroup}
-              onDeleteGroup={(groupId) => {
-                const group = groups.find((g) => g.id === groupId);
-                setDeleteConfirm({
-                  show: true,
-                  groupId,
-                  groupName: group?.name,
-                });
-              }}
-            />
+              className={
+                g.id === newlyCreatedGroupId
+                  ? "animate-in fade-in-0 zoom-in-95 duration-500"
+                  : g.id === removingGroupId
+                    ? "animate-out fade-out-0 zoom-out-95 duration-500 pointer-events-none [animation-fill-mode:forwards]"
+                    : ""
+              }
+              onAnimationEnd={() => handleGroupAnimationEnd(g.id)}
+            >
+              <GroupCard
+                group={g}
+                onAddTask={addTask}
+                onUpdateTask={(groupId, taskId, patch) => {
+                  updateTaskMutation.mutate({ groupId, taskId, patch });
+                }}
+                defaultOpen={!allCollapsed}
+                forceOpen={!allCollapsed}
+                onDeleteTask={(groupId, taskId) =>
+                  deleteTaskMutation.mutate({ groupId, taskId })
+                }
+                isAddingTask={creatingTaskGroupId === g.id}
+                deletingTaskId={
+                  deletingTask?.groupId === g.id ? deletingTask.taskId : null
+                }
+                updatingTaskId={
+                  updatingTask?.groupId === g.id ? updatingTask.taskId : null
+                }
+                removingTaskId={
+                  removingTask?.groupId === g.id ? removingTask.taskId : null
+                }
+                newlyCreatedTaskId={
+                  newlyCreatedTask?.groupId === g.id
+                    ? newlyCreatedTask.taskId
+                    : null
+                }
+                onTaskEntryAnimationEnd={(taskId) =>
+                  handleTaskEntryAnimationEnd(g.id, taskId)
+                }
+                onTaskRemoveAnimationEnd={(taskId) =>
+                  handleTaskRemoveAnimationEnd(g.id, taskId)
+                }
+                onDeleteGroup={handleDeleteGroup}
+                onEditGroup={handleEditGroup}
+                isDeletingGroup={deletingGroupId === g.id}
+              />
+            </div>
           ))
         )}
       </div>
 
       <CreateGroupModal
-        show={showCreate}
-        toggleShow={() => setShowCreate(false)}
-        onCreate={(g) => {
-          if (!g.name) return;
-          addGroup({
-            name: g.name,
-            description: g.description,
-            icon: g.iconKey as keyof typeof Icons,
-          });
-          setShowCreate(false);
-        }}
+        show={showGroupModal}
+        toggleShow={closeGroupModal}
+        mode={editingGroup ? "edit" : "create"}
+        isSubmitting={
+          createGroupMutation.isPending || editGroupMutation.isPending
+        }
+        initialData={
+          editingGroup
+            ? {
+                id: editingGroup.id,
+                name: editingGroup.name,
+                description: editingGroup.description,
+                iconKey: editingGroup.icon,
+              }
+            : undefined
+        }
+        onSubmit={submitGroupModal}
       />
       <ConfirmationDialog
         show={deleteConfirm.show}
+        isConfirming={deleteGroupMutation.isPending}
         title="Delete Group"
         description={`Are you sure you want to delete "${deleteConfirm.groupName}"? All tasks in this group will also be deleted. This action cannot be undone.`}
-        onConfirm={() => {
-          if (deleteConfirm.groupId) {
-            deleteGroup(deleteConfirm.groupId);
-          }
-          setDeleteConfirm({ show: false });
-        }}
-        onCancel={() => setDeleteConfirm({ show: false })}
+        onConfirm={confirmDeleteGroup}
+        onCancel={cancelDeleteGroup}
       />
     </>
   );

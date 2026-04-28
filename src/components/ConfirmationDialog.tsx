@@ -1,5 +1,6 @@
 import Modal from "./Modal";
 import { Button } from "@/components/ui/button";
+import { LoaderCircle } from "lucide-react";
 
 export default function ConfirmationDialog({
   title,
@@ -7,6 +8,7 @@ export default function ConfirmationDialog({
   confirmText = "Delete",
   cancelText = "Cancel",
   show,
+  isConfirming = false,
   onConfirm,
   onCancel,
 }: {
@@ -15,14 +17,10 @@ export default function ConfirmationDialog({
   confirmText?: string;
   cancelText?: string;
   show: boolean;
+  isConfirming?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
-  const handleConfirm = () => {
-    onConfirm();
-    onCancel();
-  };
-
   return (
     <Modal
       className="w-[500px]"
@@ -32,10 +30,15 @@ export default function ConfirmationDialog({
     >
       <p className="text-sm text-muted-foreground mb-4">{description}</p>
       <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onCancel}>
+        <Button variant="outline" onClick={onCancel} disabled={isConfirming}>
           {cancelText}
         </Button>
-        <Button variant="destructive" onClick={handleConfirm}>
+        <Button
+          variant="destructive"
+          onClick={onConfirm}
+          disabled={isConfirming}
+        >
+          {isConfirming && <LoaderCircle className=" h-4 w-4 animate-spin" />}
           {confirmText}
         </Button>
       </div>

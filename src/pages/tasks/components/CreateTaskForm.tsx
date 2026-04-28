@@ -4,15 +4,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import SimpleSelect from "@/components/Select";
 import { DatePickerDemo } from "@/components/ui/DatePickerDemo";
-import { CheckIcon, X } from "lucide-react";
+import { CheckIcon, X, LoaderCircle } from "lucide-react";
 import { Task } from "@/types/tasks";
 
 export default function CreateTaskForm({
   onAddTask,
   onCancel,
+  isSubmitting = false,
 }: {
-  onAddTask: (task: Task) => void;
+  onAddTask: (task: Omit<Task, "id">) => void;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }) {
   const [form, setForm] = useState({
     name: "",
@@ -27,9 +29,9 @@ export default function CreateTaskForm({
     : undefined;
 
   const handleAdd = () => {
+    if (isSubmitting) return;
     if (!form.name) return;
-    const newTask: Task = {
-      id: `${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+    const newTask: Omit<Task, "id"> = {
       name: form.name,
       description: form.description || undefined,
       dueDate: form.dueDate,
@@ -48,6 +50,7 @@ export default function CreateTaskForm({
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             className="flex-1 h-8 min-w-[180px]"
+            disabled={isSubmitting}
           />
           <DatePickerDemo
             className="w-44 h-8"
@@ -89,11 +92,25 @@ export default function CreateTaskForm({
             placeholder="Difficulty"
             className="min-w-[110px]"
           />
-          <div className="flex gap-2 ml-auto">
-            <Button size={"icon-sm"} onClick={handleAdd} className="gap-2">
-              <CheckIcon className="w-4 h-4" />
+          <div className="lg:flex hidden gap-2 ml-auto">
+            <Button
+              size={"icon-sm"}
+              onClick={handleAdd}
+              className="gap-2"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <LoaderCircle className="w-4 h-4 animate-spin" />
+              ) : (
+                <CheckIcon className="w-4 h-4" />
+              )}
             </Button>
-            <Button size={"icon-sm"} variant="outline" onClick={onCancel}>
+            <Button
+              size={"icon-sm"}
+              variant="secondary"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
               <X />
             </Button>
           </div>
@@ -104,7 +121,30 @@ export default function CreateTaskForm({
           onChange={(e) => setForm({ ...form, description: e.target.value })}
           rows={2}
           className="resize-none text-sm"
+          disabled={isSubmitting}
         />
+        <div className="flex lg:hidden gap-2 ml-auto">
+          <Button
+            size={"icon-sm"}
+            onClick={handleAdd}
+            className="gap-2"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <LoaderCircle className="w-4 h-4 animate-spin" />
+            ) : (
+              <CheckIcon className="w-4 h-4" />
+            )}
+          </Button>
+          <Button
+            size={"icon-sm"}
+            variant="secondary"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            <X />
+          </Button>
+        </div>
       </div>
     </div>
   );

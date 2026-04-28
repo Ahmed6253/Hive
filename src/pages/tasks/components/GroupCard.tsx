@@ -6,10 +6,17 @@ import {
 } from "@/components/ui/collapsible";
 
 import { Icons } from "@/components/ui/icons";
-import { ChevronDown, Plus, Minus } from "lucide-react";
-import ConfirmationDialog from "./ConfirmationDialog";
+import {
+  ChevronDown,
+  Plus,
+  SquarePen,
+  FolderX,
+  LoaderCircle,
+} from "lucide-react";
+import ConfirmationDialog from "../../../components/ConfirmationDialog";
 import TaskCard from "./TaskCard";
 import CreateTaskForm from "./CreateTaskForm";
+import TaskDetailsModal from "./TaskDetailsModal";
 import { Task, Group } from "@/types/tasks";
 
 export type { Group };
@@ -22,24 +29,48 @@ export default function GroupCard({
   forceOpen,
   onDeleteTask,
   onDeleteGroup,
+  onEditGroup,
+  isAddingTask = false,
+  deletingTaskId = null,
+  updatingTaskId = null,
+  removingTaskId = null,
+  newlyCreatedTaskId = null,
+  onTaskEntryAnimationEnd,
+  onTaskRemoveAnimationEnd,
+  isDeletingGroup = false,
 }: {
   group: Group;
-  onAddTask: (groupId: string, task: Task) => void;
+  onAddTask: (groupId: string, task: Omit<Task, "id">) => Promise<boolean>;
   onUpdateTask: (groupId: string, taskId: string, patch: Partial<Task>) => void;
   onDeleteTask?: (groupId: string, taskId: string) => void;
   onDeleteGroup?: (groupId: string) => void;
+  onEditGroup?: (group: Group) => void;
+  isAddingTask?: boolean;
+  deletingTaskId?: string | null;
+  updatingTaskId?: string | null;
+  removingTaskId?: string | null;
+  newlyCreatedTaskId?: string | null;
+  onTaskEntryAnimationEnd?: (taskId: string) => void;
+  onTaskRemoveAnimationEnd?: (taskId: string) => void;
+  isDeletingGroup?: boolean;
   defaultOpen?: boolean;
   forceOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
   useEffect(() => {
-    console.log(group);
-
     if (forceOpen !== undefined) {
       setOpen(forceOpen);
     }
   }, [forceOpen]);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  useEffect(() => {
+    if (!selectedTask) return;
+    const latest = group.tasks.find((t) => t.id === selectedTask.id) ?? null;
+    setSelectedTask(latest);
+  }, [group.tasks, selectedTask]);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{
@@ -68,7 +99,7 @@ export default function GroupCard({
       : 0;
 
   const handleUpdateTask = (taskId: string, patch: Partial<Task>) => {
-    if (patch.status === "Completed") {
+    if (patch.status === "completed") {
       setChecked((p) => ({ ...p, [taskId]: true }));
     } else {
       setChecked((p) => {
@@ -94,9 +125,23 @@ export default function GroupCard({
     }
   };
 
-  const handleAddTask = (task: Task) => {
-    onAddTask(group.id, task);
-    setShowAddForm(false);
+  const handleAddTask = async (task: Omit<Task, "id">) => {
+    const created = await onAddTask(group.id, task);
+    if (created) {
+      setShowAddForm(false);
+    }
+  };
+
+  const openTaskModal = (task: Task) => {
+    setSelectedTask(task);
+    setShowTaskModal(true);
+  };
+
+  const handleUpdateTaskFromModal = (taskId: string, patch: Partial<Task>) => {
+    onUpdateTask(group.id, taskId, patch);
+    setSelectedTask((prev) =>
+      prev && prev.id === taskId ? { ...prev, ...patch } : prev,
+    );
   };
 
   return (
@@ -115,6 +160,9 @@ export default function GroupCard({
                 <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
                   {group.tasks.length}
                 </span>
+                {isAddingTask && (
+                  <LoaderCircle className="w-4.5 h-4.5 animate-spin text-primary" />
+                )}
               </div>
               {group.description && (
                 <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
@@ -123,7 +171,7 @@ export default function GroupCard({
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {group.tasks.length > 0 && (
               <div className="flex items-center gap-1.5 justify-between w-24">
                 <div className="w-17 h-1 bg-muted rounded-full overflow-hidden">
@@ -137,15 +185,33 @@ export default function GroupCard({
                 </span>
               </div>
             )}
+            {
+              <span
+                className="text-muted-foreground/60 hover:text-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditGroup?.(group);
+                }}
+              >
+                <SquarePen className="w-4 h-4" />
+              </span>
+            }
             {onDeleteGroup && (
               <span
-                className="text-muted-foreground/60 hover:text-error"
+                className={`text-muted-foreground/60 hover:text-error ${
+                  isDeletingGroup ? "opacity-50 pointer-events-none" : ""
+                }`}
                 onClick={(e) => {
+                  if (isDeletingGroup) return;
                   e.stopPropagation();
                   onDeleteGroup(group.id);
                 }}
               >
-                <Minus className="w-3 h-3" />
+                {isDeletingGroup ? (
+                  <LoaderCircle className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FolderX className="w-4 h-4" />
+                )}
               </span>
             )}
             <ChevronDown
@@ -163,25 +229,48 @@ export default function GroupCard({
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-3">
                 {group.tasks.map((t) => (
-                  <TaskCard
+                  <div
                     key={t.id}
-                    task={t}
-                    isDone={t.status === "completed"}
-                    onToggleComplete={() => toggleComplete(t.id)}
-                    onUpdateStatus={(status) =>
-                      handleUpdateTask(t.id, { status })
+                    className={
+                      t.id === newlyCreatedTaskId
+                        ? "animate-in fade-in-0 zoom-in-95 duration-500"
+                        : t.id === removingTaskId
+                          ? "animate-out fade-out-0 zoom-out-95 duration-500 pointer-events-none [animation-fill-mode:forwards]"
+                          : ""
                     }
-                    onUpdateDifficulty={(difficulty) =>
-                      handleUpdateTask(t.id, { difficulty })
-                    }
-                    onDelete={() =>
-                      setDeleteConfirm({
-                        show: true,
-                        taskId: t.id,
-                        taskName: t.name,
-                      })
-                    }
-                  />
+                    onAnimationEnd={() => {
+                      if (t.id === newlyCreatedTaskId) {
+                        onTaskEntryAnimationEnd?.(t.id);
+                      }
+                      if (t.id === removingTaskId) {
+                        onTaskRemoveAnimationEnd?.(t.id);
+                      }
+                    }}
+                  >
+                    <TaskCard
+                      task={t}
+                      isDone={t.status === "completed"}
+                      isUpdating={updatingTaskId === t.id}
+                      isDeleting={
+                        deletingTaskId === t.id || removingTaskId === t.id
+                      }
+                      onOpen={() => openTaskModal(t)}
+                      onToggleComplete={() => toggleComplete(t.id)}
+                      onUpdateStatus={(status) =>
+                        handleUpdateTask(t.id, { status })
+                      }
+                      onUpdateDifficulty={(difficulty) =>
+                        handleUpdateTask(t.id, { difficulty })
+                      }
+                      onDelete={() =>
+                        setDeleteConfirm({
+                          show: true,
+                          taskId: t.id,
+                          taskName: t.name,
+                        })
+                      }
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -189,6 +278,7 @@ export default function GroupCard({
               <CreateTaskForm
                 onAddTask={handleAddTask}
                 onCancel={() => setShowAddForm(false)}
+                isSubmitting={isAddingTask}
               />
             ) : (
               <button
@@ -197,7 +287,8 @@ export default function GroupCard({
                   setOpen(true);
                   setShowAddForm(true);
                 }}
-                className="w-full px-3 py-2 flex items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground rounded-b-lg border-t border-dashed border-border/30 hover:text-foreground bg-muted/20 hover:bg-muted/30 transition-all duration-200"
+                disabled={isAddingTask}
+                className="w-full px-3 py-2 flex items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground rounded-b-lg border-t border-dashed border-border/30 hover:text-foreground bg-muted/20 hover:bg-muted/30 transition-all duration-200 disabled:opacity-60 disabled:pointer-events-none"
               >
                 <Plus className="w-3 h-3" />
                 Add task
@@ -208,6 +299,11 @@ export default function GroupCard({
       </Collapsible>
       <ConfirmationDialog
         show={deleteConfirm.show}
+        isConfirming={
+          Boolean(deletingTaskId) &&
+          deleteConfirm.taskId === deletingTaskId &&
+          removingTaskId !== deletingTaskId
+        }
         title="Delete Task"
         description={`Are you sure you want to delete "${deleteConfirm.taskName}"? This action cannot be undone.`}
         onConfirm={() => {
@@ -217,6 +313,12 @@ export default function GroupCard({
           setDeleteConfirm({ show: false });
         }}
         onCancel={() => setDeleteConfirm({ show: false })}
+      />
+      <TaskDetailsModal
+        show={showTaskModal}
+        toggleShow={() => setShowTaskModal(false)}
+        task={selectedTask}
+        onUpdateTask={handleUpdateTaskFromModal}
       />
     </div>
   );
