@@ -37,7 +37,7 @@ const Sidebar = () => {
     >
       <div
         onClick={toggleSideBar}
-        className="flex h-16 items-center justify-between pl-4.5 relative cursor-pointer"
+        className="flex h-16 items-center justify-between pl-4 relative cursor-pointer"
       >
         <AnimatedLogo isOpen={isOpen} />
 
@@ -45,7 +45,7 @@ const Sidebar = () => {
           strokeWidth={3}
           className={`w-5  cursor-pointer bottom-1 transition-all duration-500 absolute ${
             !isOpen
-              ? "text-bg rotate-180 right-4 bottom-[0.75rem]"
+              ? "text-bg rotate-180 right-[1.2rem] bottom-[0.75rem]"
               : " opacity-100 right-2"
           }`}
         />
