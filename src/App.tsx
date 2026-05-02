@@ -72,7 +72,15 @@ function App() {
               </RouterRoute>
             </Routes>
           </BrowserRouter>
-          <Toaster position="top-center" />
+          <Toaster
+            toastOptions={{
+              style: {
+                background: "var(--card)",
+                color: "var(--text)",
+              },
+            }}
+            position="top-center"
+          />
         </>
       )}
     </>
