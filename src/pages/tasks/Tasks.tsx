@@ -1,3 +1,4 @@
+import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -5,7 +6,19 @@ import GroupCard from "@/pages/tasks/components/GroupCard";
 import CreateGroupModal from "@/pages/tasks/components/CreateGroupModal";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Plus, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useTasks } from "./useTasks";
+import TaskCard from "./components/TaskCard";
+import { Task } from "@/types/tasks";
 
 export default function Tasks() {
   const {
@@ -40,10 +53,57 @@ export default function Tasks() {
     createGroupMutation,
     editGroupMutation,
     deleteGroupMutation,
+    moveTask,
+    persistSortOrder,
   } = useTasks();
 
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const findTaskGroup = (taskId: string) =>
+    groups.find((g) => g.tasks.some((t) => t.id === taskId));
+
   return (
-    <>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={(event) => {
+        const group = findTaskGroup(String(event.active.id));
+        if (!group) return;
+        const task = group.tasks.find((t) => t.id === event.active.id);
+        if (task) setActiveTask(task);
+      }}
+      onDragEnd={(event) => {
+        const { active, over } = event;
+        setActiveTask(null);
+
+        if (!over) return;
+
+        const activeId = String(active.id);
+        const overId = String(over.id);
+
+        const currentGroup = findTaskGroup(activeId);
+        if (!currentGroup) return;
+
+        const overGroup = findTaskGroup(overId);
+        if (overGroup?.id !== currentGroup.id) return;
+
+        const latestGroups = moveTask(
+          activeId,
+          currentGroup.id,
+          overGroup.id,
+          overId,
+        );
+        persistSortOrder(latestGroups, [currentGroup.id]);
+      }}
+      onDragCancel={() => setActiveTask(null)}
+    >
       <PageHeader
         title="Tasks"
         description="Groups organize related tasks. Create groups and add tasks."
@@ -70,7 +130,7 @@ export default function Tasks() {
       </PageHeader>
 
       <div className="space-y-4">
-        {isFetching ? (
+        {isFetching && (
           <>
             {[1, 2, 3].map((i) => (
               <div
@@ -91,7 +151,8 @@ export default function Tasks() {
               </div>
             ))}
           </>
-        ) : groups?.length === 0 && !isFetching ? (
+        )}
+        {groups?.length === 0 && !isFetching ? (
           <div className="text-muted-foreground">
             No groups yet. Create one to get started.
           </div>
@@ -149,6 +210,24 @@ export default function Tasks() {
         )}
       </div>
 
+      <DragOverlay dropAnimation={null}>
+        {activeTask ? (
+          <div className="opacity-80 shake shadow-xl rounded-lg">
+            <TaskCard
+              task={activeTask}
+              isDone={activeTask.status === "completed"}
+              isUpdating={false}
+              isDeleting={false}
+              onOpen={() => {}}
+              onToggleComplete={() => {}}
+              onUpdateStatus={() => {}}
+              onUpdateDifficulty={() => {}}
+              onDelete={() => {}}
+            />
+          </div>
+        ) : null}
+      </DragOverlay>
+
       <CreateGroupModal
         show={showGroupModal}
         toggleShow={closeGroupModal}
@@ -176,6 +255,6 @@ export default function Tasks() {
         onConfirm={confirmDeleteGroup}
         onCancel={cancelDeleteGroup}
       />
-    </>
+    </DndContext>
   );
 }

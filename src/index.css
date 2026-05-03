@@ -288,4 +288,26 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  @keyframes shake {
+    0% {
+      transform: rotate(0);
+    }
+    25% {
+      transform: rotate(-1deg);
+    }
+    50% {
+      transform: rotate(1deg);
+    }
+    75% {
+      transform: rotate(-1deg);
+    }
+    100% {
+      transform: rotate(0);
+    }
+  }
+
+  .shake {
+    animation: shake 0.5s ease-in;
+  }
 }

@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { axiosInstance } from "@/lib/axios";
 import { Icons } from "@/components/ui/icons";
 import { Task } from "@/types/tasks";
 import { Group } from "./components/GroupCard";
+import type { Error } from "@/types";
 
 const firstIconKey = (Object.keys(Icons)[0] ?? "work") as keyof typeof Icons;
 const normalizeIcon = (icon?: string): keyof typeof Icons =>
@@ -104,6 +105,82 @@ export function useTasks() {
     setGroups((p) => p.filter((g) => g.id !== groupId));
   };
 
+  const applyMove = (
+    prev: Group[],
+    activeTaskId: string,
+    activeGroupId: string,
+    overGroupId: string,
+    overTaskId?: string,
+  ): Group[] => {
+    const activeGroup = prev.find((g) => g.id === activeGroupId);
+    const task = activeGroup?.tasks.find((t) => t.id === activeTaskId);
+    if (!task) return prev;
+
+    const overGroup = prev.find((g) => g.id === overGroupId);
+    if (!overGroup) return prev;
+
+    if (activeGroupId === overGroupId) {
+      const overIndex = overGroup.tasks.findIndex((t) => t.id === overTaskId);
+      if (overIndex === -1) return prev;
+      const taskIndex = overGroup.tasks.findIndex((t) => t.id === activeTaskId);
+      if (taskIndex === -1) return prev;
+      const newTasks = [...overGroup.tasks];
+      const [moved] = newTasks.splice(taskIndex, 1);
+      newTasks.splice(overIndex, 0, moved);
+      return prev.map((g) =>
+        g.id === overGroupId ? { ...g, tasks: newTasks } : g,
+      );
+    }
+
+    const overIndex = overTaskId
+      ? overGroup.tasks.findIndex((t) => t.id === overTaskId)
+      : overGroup.tasks.length;
+    const newActiveTasks = activeGroup!.tasks.filter(
+      (t) => t.id !== activeTaskId,
+    );
+    const newOverTasks = [...overGroup.tasks];
+    newOverTasks.splice(
+      overIndex === -1 ? newOverTasks.length : overIndex,
+      0,
+      task,
+    );
+    return prev.map((g) => {
+      if (g.id === activeGroupId) return { ...g, tasks: newActiveTasks };
+      if (g.id === overGroupId) return { ...g, tasks: newOverTasks };
+      return g;
+    });
+  };
+
+  const moveTask = (
+    activeTaskId: string,
+    activeGroupId: string,
+    overGroupId: string,
+    overTaskId?: string,
+  ): Group[] => {
+    const newGroups = applyMove(groups, activeTaskId, activeGroupId, overGroupId, overTaskId);
+    setGroups(newGroups);
+    return newGroups;
+  };
+
+  const sortTasksMutation = useMutation({
+    mutationFn: async (items: { id: string; sortOrder: number }[]) =>
+      axiosInstance.put("/tasks/sort", items),
+    onError: () => {
+      toast.error("Failed to save task order");
+    },
+  });
+
+  const persistSortOrder = useCallback((currentGroups: Group[], groupIds: string[]) => {
+    const items = currentGroups
+      .filter((g) => groupIds.includes(g.id))
+      .flatMap((g) =>
+        g.tasks.map((t, index) => ({ id: t.id, sortOrder: index })),
+      );
+    if (items.length > 0) {
+      sortTasksMutation.mutate(items);
+    }
+  }, []);
+
   const getTaskById = (groupId: string, taskId: string) =>
     groups.find((g) => g.id === groupId)?.tasks.find((t) => t.id === taskId);
 
@@ -149,7 +226,7 @@ export function useTasks() {
       toast.success("Group created successfully");
       setShowGroupModal(false);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error?.response?.data?.message || "Failed to create group");
     },
   });
@@ -183,7 +260,7 @@ export function useTasks() {
       setShowGroupModal(false);
       setEditingGroup(null);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error?.response?.data?.message || "Failed to update group");
     },
   });
@@ -201,7 +278,7 @@ export function useTasks() {
       setRemovingGroupId(groupId);
       toast.success(res.data.data.message);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error?.response?.data?.message || "Failed to delete group");
     },
     onSettled: () => {
@@ -252,12 +329,8 @@ export function useTasks() {
       });
       toast.success("Task created successfully");
     },
-    onError: (error) => {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to create task",
-      );
+    onError: (error: Error) => {
+      toast.error(error?.response?.data?.message || "Failed to create task");
     },
     onSettled: () => {
       setCreatingTaskGroupId(null);
@@ -295,7 +368,7 @@ export function useTasks() {
       updateTaskInGroup(variables.groupId, variables.taskId, updatedTask);
       toast.success("Task updated successfully");
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error?.response?.data?.message || "Failed to update task");
     },
     onSettled: () => {
@@ -321,7 +394,7 @@ export function useTasks() {
       setRemovingTask({ groupId: variables.groupId, taskId: variables.taskId });
       toast.success("Task deleted successfully");
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error?.response?.data?.message || "Failed to delete task");
     },
     onSettled: () => {
@@ -453,5 +526,8 @@ export function useTasks() {
     handleGroupAnimationEnd,
     handleTaskEntryAnimationEnd,
     handleTaskRemoveAnimationEnd,
+    moveTask,
+    persistSortOrder,
+    sortTasksMutation,
   };
 }

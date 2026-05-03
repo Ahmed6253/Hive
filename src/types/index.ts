@@ -43,3 +43,7 @@ export interface Reward {
   description: string;
   achieved: boolean;
 }
+
+export interface Error {
+  response?: { data?: { message?: string } };
+}

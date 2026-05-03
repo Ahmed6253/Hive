@@ -7,6 +7,7 @@ export type Task = {
   dueDate?: string;
   status: string;
   difficulty: 1 | 2 | 3;
+  sortOrder?: number;
 };
 
 export type Group = {

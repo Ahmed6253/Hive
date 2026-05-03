@@ -13,8 +13,10 @@ import {
   FolderX,
   LoaderCircle,
 } from "lucide-react";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
 import ConfirmationDialog from "../../../components/ConfirmationDialog";
-import TaskCard from "./TaskCard";
+import SortableTaskCard from "./SortableTaskCard";
 import CreateTaskForm from "./CreateTaskForm";
 import TaskDetailsModal from "./TaskDetailsModal";
 import { Task, Group } from "@/types/tasks";
@@ -57,6 +59,10 @@ export default function GroupCard({
   forceOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const { setNodeRef: setDroppableRef, isOver } = useDroppable({
+    id: `group-${group.id}`,
+    data: { type: "group", group },
+  });
 
   useEffect(() => {
     if (forceOpen !== undefined) {
@@ -78,17 +84,6 @@ export default function GroupCard({
     taskId?: string;
     taskName?: string;
   }>({ show: false });
-  const [checked, setChecked] = useState<Record<string, boolean>>({
-    ...group.tasks.reduce(
-      (acc, t) => {
-        if (t.status === "completed") {
-          acc[t.id] = true;
-        }
-        return acc;
-      },
-      {} as Record<string, boolean>,
-    ),
-  });
 
   const completedCount = group.tasks.filter(
     (t) => t.status === "completed",
@@ -99,30 +94,14 @@ export default function GroupCard({
       : 0;
 
   const handleUpdateTask = (taskId: string, patch: Partial<Task>) => {
-    if (patch.status === "completed") {
-      setChecked((p) => ({ ...p, [taskId]: true }));
-    } else {
-      setChecked((p) => {
-        const copy = { ...p };
-        delete copy[taskId];
-        return copy;
-      });
-    }
     onUpdateTask(group.id, taskId, patch);
   };
 
   const toggleComplete = (taskId: string) => {
-    if (checked[taskId]) {
-      setChecked((p) => {
-        const copy = { ...p };
-        delete copy[taskId];
-        return copy;
-      });
-      onUpdateTask(group.id, taskId, { status: "not-started" });
-    } else {
-      setChecked((p) => ({ ...p, [taskId]: true }));
-      onUpdateTask(group.id, taskId, { status: "completed" });
-    }
+    const task = group.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    const newStatus = task.status === "completed" ? "not-started" : "completed";
+    onUpdateTask(group.id, taskId, { status: newStatus });
   };
 
   const handleAddTask = async (task: Omit<Task, "id">) => {
@@ -227,27 +206,17 @@ export default function GroupCard({
                 <p className="text-xs text-muted-foreground">No tasks</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-3">
-                {group.tasks.map((t) => (
-                  <div
-                    key={t.id}
-                    className={
-                      t.id === newlyCreatedTaskId
-                        ? "animate-in fade-in-0 zoom-in-95 duration-500"
-                        : t.id === removingTaskId
-                          ? "animate-out fade-out-0 zoom-out-95 duration-500 pointer-events-none [animation-fill-mode:forwards]"
-                          : ""
-                    }
-                    onAnimationEnd={() => {
-                      if (t.id === newlyCreatedTaskId) {
-                        onTaskEntryAnimationEnd?.(t.id);
-                      }
-                      if (t.id === removingTaskId) {
-                        onTaskRemoveAnimationEnd?.(t.id);
-                      }
-                    }}
-                  >
-                    <TaskCard
+              <SortableContext
+                items={group.tasks.map((t) => t.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div
+                  ref={setDroppableRef}
+                  className={`grid grid-cols-1 md:grid-cols-2 gap-2 p-3 transition-colors duration-200 ${isOver ? "bg-primary/5" : ""}`}
+                >
+                  {group.tasks.map((t) => (
+                    <SortableTaskCard
+                      key={t.id}
                       task={t}
                       isDone={t.status === "completed"}
                       isUpdating={updatingTaskId === t.id}
@@ -269,10 +238,14 @@ export default function GroupCard({
                           taskName: t.name,
                         })
                       }
+                      newlyCreatedTaskId={newlyCreatedTaskId}
+                      removingTaskId={removingTaskId}
+                      onTaskEntryAnimationEnd={onTaskEntryAnimationEnd}
+                      onTaskRemoveAnimationEnd={onTaskRemoveAnimationEnd}
                     />
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </SortableContext>
             )}
             {showAddForm ? (
               <CreateTaskForm
